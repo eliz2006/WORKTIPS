@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Segoe UI", system-ui, sans-serif;
+  --color-ink: #2c2118;
+  --color-paper: #f6efe6;
+  --color-cream: #fbf7f2;
+  --color-press: #74543b;
+  --color-press-dark: #5c4030;
+  --color-gold: #c6a786;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #efe6db;
+  color: #2c2118;
+  font-family: var(--font-sans);
+}
+
+.card {
+  @apply rounded-2xl border border-[#e5d8c8] bg-white shadow-sm;
+}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WorkTips | Printing Operations</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="loginScreen" class="login-screen">
+    <section class="login-visual">
+      <div class="brand large"><span class="brand-mark">WT</span><div><strong>WorkTips</strong><small>Share Knowledge. Keep Printing.</small></div></div>
+      <div class="login-copy"><span class="eyebrow">PRINTING OPERATIONS HUB</span><h1>Every solution<br>starts with sharing.</h1><p>One workspace for practical knowledge, printer maintenance, and smarter business decisions.</p></div>
+      <div class="login-note">Knowledge • Operations • Analytics</div>
+    </section>
+    <section class="login-form-wrap">
+      <form id="loginForm" class="login-form">
+        <div class="brand"><span class="brand-mark">WT</span><div><strong>WorkTips</strong><small>Workplace knowledge platform</small></div></div>
+        <h2>Welcome back</h2><p class="muted">Sign in to your workspace.</p>
+        <label>Email or username<input id="loginUser" required placeholder="Enter username"></label>
+        <label>Password<input id="loginPassword" type="password" required placeholder="Enter password"></label>
+        <label>Sign in as<select id="loginRole"><option value="employee">Employee</option><option value="admin">Administrator / Supervisor</option></select></label>
+        <button class="btn primary full" type="submit">Sign in</button>
+        <p class="demo-hint"><strong>Demo access</strong><br>Enter any username and password. Choose a role to preview its interface.</p>
+      </form>
+    </section>
+  </div>
+
+  <div id="app" class="app hidden">
+    <aside class="sidebar">
+      <div class="brand sidebar-brand"><span class="brand-mark"></span><div><strong>WorkTips</strong><small>Printing operations</small></div></div>
+      <div class="role-chip" id="roleChip">EMPLOYEE WORKSPACE</div>
+      <nav id="navigation"></nav>
+      <div class="sidebar-bottom"><div class="avatar" id="avatar">ES</div><div class="user-meta"><strong id="userName">Employee</strong><small id="userRole">Employee</small></div><button class="icon-btn logout" id="logoutBtn" title="Sign out">↪</button></div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><button id="mobileMenu" class="icon-btn mobile-menu">☰</button><div class="global-search"><span>⌕</span><input id="globalSearch" placeholder="Search tutorials, issues, printers..."><kbd>Enter</kbd></div><div class="top-actions"><button class="icon-btn" id="helpBtn" title="Help">?</button><div class="avatar small-avatar" id="topAvatar">ES</div><span class="top-user" id="topUser">Employee</span></div></header>
+      <div id="pageContent" class="page-content"></div>
+    </main>
+  </div>
+  <div id="toast" class="toast"></div>
+  <div id="modalRoot"></div>
+  <script src="app.js"></script>
+</body>
+</html>
