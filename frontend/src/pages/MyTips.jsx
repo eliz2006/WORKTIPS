@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom'
 import api from '../api/client'
 import Badge from '../components/Badge'
 import Modal from '../components/Modal'
+import { useAuth } from '../context/AuthContext'
 
 export default function MyTips() {
+  const { canWrite } = useAuth()
   const [items, setItems] = useState([])
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState({ title: '', type: 'tip', body: '' })
@@ -31,9 +33,11 @@ export default function MyTips() {
     <div>
       <div className="mb-5 flex justify-between">
         <h1 className="text-3xl font-semibold">My Tips</h1>
-        <button className="rounded-xl bg-press px-4 py-2 text-white" onClick={() => setOpen(true)}>
-          Share a tip
-        </button>
+        {canWrite && (
+          <button className="rounded-xl bg-press px-4 py-2 text-white" onClick={() => setOpen(true)}>
+            Share a tip
+          </button>
+        )}
       </div>
       <div className="card overflow-hidden">
         <table className="w-full text-sm">

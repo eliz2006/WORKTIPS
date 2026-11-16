@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import api from '../api/client'
 import Badge from '../components/Badge'
+import { useAuth } from '../context/AuthContext'
 
 export default function Knowledge({ forcedType }) {
+  const { canWrite } = useAuth()
   const [params, setParams] = useSearchParams()
   const [items, setItems] = useState([])
   const q = params.get('q') || ''
@@ -20,9 +22,11 @@ export default function Knowledge({ forcedType }) {
           <h1 className="text-3xl font-semibold">Knowledge Base</h1>
           <p className="text-[#7a6a5c]">Tutorials, documentation, troubleshooting, and machine procedures.</p>
         </div>
-        <Link to="/app/tips" className="rounded-xl bg-press px-4 py-2 text-white">
-          Share a tip
-        </Link>
+        {canWrite && (
+          <Link to="/app/tips" className="rounded-xl bg-press px-4 py-2 text-white">
+            Share a tip
+          </Link>
+        )}
       </div>
       <div className="mb-5 flex gap-3">
         <input

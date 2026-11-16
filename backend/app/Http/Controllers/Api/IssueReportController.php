@@ -15,7 +15,7 @@ class IssueReportController extends Controller
     {
         $query = IssueReport::query()
             ->with(['printer:id,name,model,condition', 'reporter:id,name', 'assignee:id,name'])
-            ->when(! $request->user()->isAdmin(), fn ($q) => $q->where('user_id', $request->user()->id))
+            ->when($request->user()->isEmployee(), fn ($q) => $q->where('user_id', $request->user()->id))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
             ->latest();
 
@@ -52,7 +52,7 @@ class IssueReportController extends Controller
 
     public function show(Request $request, IssueReport $issue)
     {
-        abort_unless($request->user()->isAdmin() || $issue->user_id === $request->user()->id, 403);
+        abort_unless($request->user()->isAdmin() || $request->user()->isRecipient() || $issue->user_id === $request->user()->id, 403);
 
         return $issue->load(['printer.commonProblems', 'reporter', 'assignee', 'commonProblem']);
     }

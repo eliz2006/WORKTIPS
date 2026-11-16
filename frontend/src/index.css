@@ -24,5 +24,79 @@ body {
 }
 
 .card {
-  @apply rounded-2xl border border-[#e5d8c8] bg-white shadow-sm;
+  @apply rounded-2xl border border-[#e5d8c8] bg-white shadow-sm transition duration-300;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(44, 33, 24, 0.08);
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s ease;
+}
+
+.reveal-in {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes floatBlob {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(18px, -16px) scale(1.08);
+  }
+}
+
+.hero-copy {
+  animation: rise 0.9s ease both;
+}
+
+.hero-copy-delay {
+  animation: rise 0.9s ease 0.15s both;
+}
+
+.hero-copy-later {
+  animation: rise 0.9s ease 0.28s both;
+}
+
+.float-blob {
+  animation: floatBlob 10s ease-in-out infinite;
+}
+
+.float-blob-slow {
+  animation: floatBlob 14s ease-in-out infinite reverse;
+}
+
+.btn-press {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.btn-press:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(116, 84, 59, 0.28);
+}
+
+.landing-header {
+  animation: rise 0.6s ease both;
 }

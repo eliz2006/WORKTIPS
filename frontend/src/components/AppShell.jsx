@@ -13,6 +13,16 @@ const employeeNav = [
   ['/app/jobs', 'Printing Jobs'],
 ]
 
+const recipientNav = [
+  ['/app', 'Dashboard'],
+  ['/app/knowledge', 'Knowledge Base'],
+  ['/app/tutorials', 'Tutorials & Videos'],
+  ['/app/troubleshooting', 'Troubleshooting'],
+  ['/app/equipment', 'Equipment'],
+  ['/app/issues', 'Issue Reports'],
+  ['/app/jobs', 'Printing Jobs'],
+]
+
 const adminNav = [
   ['/app', 'Dashboard'],
   ['/app/analytics', 'Analytics'],
@@ -27,9 +37,9 @@ const adminNav = [
 ]
 
 export default function AppShell() {
-  const { user, isAdmin, logout } = useAuth()
+  const { user, isAdmin, isRecipient, roleLabel, logout } = useAuth()
   const navigate = useNavigate()
-  const nav = isAdmin ? adminNav : employeeNav
+  const nav = isAdmin ? adminNav : isRecipient ? recipientNav : employeeNav
   const initials = user?.name
     ?.split(' ')
     .map((p) => p[0])
@@ -63,7 +73,7 @@ export default function AppShell() {
             <div className="grid h-10 w-10 place-items-center rounded-full bg-press text-sm font-semibold">{initials}</div>
             <div>
               <div className="text-sm font-medium">{user?.name}</div>
-              <div className="text-xs text-gold">{isAdmin ? 'Administrator' : 'Employee'}</div>
+              <div className="text-xs text-gold">{roleLabel}</div>
             </div>
           </div>
           <button
@@ -81,7 +91,7 @@ export default function AppShell() {
         <header className="sticky top-0 z-20 flex items-center justify-between border-b border-[#e5d8c8] bg-[#fbf7f2]/90 px-6 py-4 backdrop-blur">
           <div>
             <div className="text-[11px] tracking-[0.18em] text-[#8a7b6d]">
-              {isAdmin ? 'ADMINISTRATOR WORKSPACE' : 'EMPLOYEE WORKSPACE'}
+              {isAdmin ? 'ADMINISTRATOR WORKSPACE' : isRecipient ? 'RECIPIENT WORKSPACE' : 'EMPLOYEE WORKSPACE'}
             </div>
             <div className="font-medium">{user?.name}</div>
           </div>

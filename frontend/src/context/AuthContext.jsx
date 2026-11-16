@@ -41,6 +41,9 @@ export function AuthProvider({ children }) {
       user,
       loading,
       isAdmin: user?.role === 'admin',
+      isRecipient: user?.role === 'recipient',
+      canWrite: user?.role !== 'recipient',
+      roleLabel: user?.role === 'admin' ? 'Administrator' : user?.role === 'recipient' ? 'Recipient' : 'Employee',
       login: async (email, password) => {
         const { data } = await api.post('/login', { email, password })
         persist(data)

@@ -20,7 +20,7 @@ class RegisterRequest extends FormRequest
             'password' => ['required', 'confirmed', Password::min(8)],
             'department' => ['nullable', 'string', 'max:120'],
             'phone' => ['nullable', 'string', 'max:30'],
-            'role' => ['sometimes', 'in:employee'],
+            'role' => ['required', 'in:employee,recipient'],
         ];
     }
 }

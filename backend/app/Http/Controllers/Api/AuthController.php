@@ -14,10 +14,7 @@ class AuthController extends Controller
 {
     public function register(RegisterRequest $request)
     {
-        $user = User::create([
-            ...$request->validated(),
-            'role' => 'employee',
-        ]);
+        $user = User::create($request->validated());
 
         $token = $user->createToken('worktips-spa')->plainTextToken;
 

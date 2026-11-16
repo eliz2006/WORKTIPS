@@ -5,7 +5,7 @@ import Modal from '../components/Modal'
 import { useAuth } from '../context/AuthContext'
 
 export default function Issues() {
-  const { isAdmin } = useAuth()
+  const { isAdmin, canWrite } = useAuth()
   const [rows, setRows] = useState([])
   const [printers, setPrinters] = useState([])
   const [open, setOpen] = useState(false)
@@ -39,10 +39,12 @@ export default function Issues() {
   return (
     <div>
       <div className="mb-5 flex justify-between">
-        <h1 className="text-3xl font-semibold">{isAdmin ? 'Issue Reports & Maintenance' : 'My Issue Reports'}</h1>
-        <button className="rounded-xl bg-press px-4 py-2 text-white" onClick={() => setOpen(true)}>
-          Report issue
-        </button>
+        <h1 className="text-3xl font-semibold">{isAdmin ? 'Issue Reports & Maintenance' : canWrite ? 'My Issue Reports' : 'Issue Reports'}</h1>
+        {canWrite && (
+          <button className="rounded-xl bg-press px-4 py-2 text-white" onClick={() => setOpen(true)}>
+            Report issue
+          </button>
+        )}
       </div>
       <div className="card overflow-auto">
         <table className="w-full text-sm">

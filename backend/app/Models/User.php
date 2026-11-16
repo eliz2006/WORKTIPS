@@ -40,6 +40,16 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
+    public function isRecipient(): bool
+    {
+        return $this->role === 'recipient';
+    }
+
+    public function isEmployee(): bool
+    {
+        return $this->role === 'employee';
+    }
+
     public function knowledgeItems(): HasMany
     {
         return $this->hasMany(KnowledgeItem::class);

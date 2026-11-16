@@ -6,7 +6,7 @@ import Badge from '../components/Badge'
 import StatCard from '../components/StatCard'
 
 export default function EmployeeDashboard() {
-  const { user } = useAuth()
+  const { user, canWrite, isRecipient } = useAuth()
   const [tips, setTips] = useState([])
   const [issues, setIssues] = useState([])
   const [saved, setSaved] = useState(0)
@@ -23,17 +23,21 @@ export default function EmployeeDashboard() {
         <div>
           <div className="text-[11px] tracking-[0.18em] text-[#8a7b6d]">WORKTIPS WORKSPACE</div>
           <h1 className="text-3xl font-semibold">Good day, {user?.name?.split(' ')[0]}</h1>
-          <p className="text-[#7a6a5c]">Find answers, share knowledge, and keep the presses running.</p>
+          <p className="text-[#7a6a5c]">
+            {canWrite ? 'Find answers, share knowledge, and keep the presses running.' : 'View-only access. Browse knowledge, printers, jobs, and issue reports.'}
+          </p>
         </div>
-        <Link to="/app/tips" className="rounded-xl bg-press px-4 py-2 text-white">
-          Share a tip
-        </Link>
+        {canWrite && (
+          <Link to="/app/tips" className="rounded-xl bg-press px-4 py-2 text-white">
+            Share a tip
+          </Link>
+        )}
       </div>
       <div className="grid gap-4 md:grid-cols-4">
         <StatCard label="Published tips" value={tips.length} icon="✎" hint="Latest approved knowledge" />
         <StatCard label="Open issues" value={issues.filter((i) => i.status !== 'resolved').length} icon="⚑" />
         <StatCard label="Saved items" value={saved} icon="♡" />
-        <StatCard label="Your role" value="Employee" icon="⌂" hint={user?.department} />
+        <StatCard label="Your role" value={isRecipient ? 'Recipient' : 'Employee'} icon="⌂" hint={user?.department} />
       </div>
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <section className="card p-5">

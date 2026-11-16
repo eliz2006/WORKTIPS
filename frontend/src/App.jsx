@@ -17,12 +17,14 @@ import Ink from './pages/Ink'
 import Maintenance from './pages/Maintenance'
 import Content from './pages/Content'
 import AnalyticsDashboard from './pages/AnalyticsDashboard'
+import Landing from './pages/Landing'
 
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route element={<ProtectedRoute />}>
@@ -46,7 +48,7 @@ export default function App() {
               </Route>
             </Route>
           </Route>
-          <Route path="*" element={<Navigate to="/app" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

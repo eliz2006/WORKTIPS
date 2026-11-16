@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import api from '../api/client'
 import Modal from '../components/Modal'
+import { useAuth } from '../context/AuthContext'
 
 function money(n) {
   return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(n || 0)
 }
 
 export default function Jobs() {
+  const { canWrite } = useAuth()
   const [rows, setRows] = useState([])
   const [printers, setPrinters] = useState([])
   const [inks, setInks] = useState([])
@@ -48,9 +50,11 @@ export default function Jobs() {
           <h1 className="text-3xl font-semibold">Printing Jobs / Sales</h1>
           <p className="text-[#7a6a5c]">Each completed job feeds total sales, type mix, and monthly trend charts.</p>
         </div>
-        <button className="rounded-xl bg-press px-4 py-2 text-white" onClick={() => setOpen(true)}>
-          Record job
-        </button>
+        {canWrite && (
+          <button className="rounded-xl bg-press px-4 py-2 text-white" onClick={() => setOpen(true)}>
+            Record job
+          </button>
+        )}
       </div>
       <div className="card overflow-auto">
         <table className="w-full text-sm">
