@@ -38,11 +38,11 @@ class AnalyticsController extends Controller
 
         $monthlySales = (clone $jobs)
             ->select(
-                DB::raw("DATE_FORMAT(job_date, '%Y-%m') as month"),
+                DB::raw("TO_CHAR(job_date, 'YYYY-MM') as month"),
                 DB::raw('SUM(total_amount) as total'),
                 DB::raw('COUNT(*) as orders')
             )
-            ->groupBy(DB::raw("DATE_FORMAT(job_date, '%Y-%m')"))
+            ->groupBy(DB::raw("TO_CHAR(job_date, 'YYYY-MM')"))
             ->orderBy('month')
             ->get();
 
@@ -129,7 +129,7 @@ class AnalyticsController extends Controller
             'maintenance_due' => $maintenanceDue,
             'frequently_replaced_parts' => $replacedParts,
             'most_viewed_tutorials' => KnowledgeItem::query()->approved()->where('type', 'tutorial')->orderByDesc('views')->limit(5)->get(['id', 'title', 'views', 'type']),
-            'most_useful_tips' => KnowledgeItem::query()->approved()->withAvg('ratings', 'score')->orderByDesc('ratings_avg_score')->limit(5)->get(['id', 'title', 'views', 'type']),
+            'most_useful_tips' => KnowledgeItem::query()->approved()->withAvg('ratings', 'score')->orderByRaw('ratings_avg_score DESC NULLS LAST')->limit(5)->get(['id', 'title', 'views', 'type']),
             'most_reported_issues' => IssueReport::query()
                 ->select('title', DB::raw('COUNT(*) as reports'))
                 ->groupBy('title')
