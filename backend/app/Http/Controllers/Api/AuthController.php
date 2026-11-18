@@ -14,13 +14,18 @@ class AuthController extends Controller
 {
     public function register(RegisterRequest $request)
     {
-        $user = User::create($request->validated());
+        $data = $request->validated();
 
-        $token = $user->createToken('worktips-spa')->plainTextToken;
+        // Never let a public registration pick admin or set its own status.
+        if (($data['role'] ?? null) === 'admin') {
+            $data['role'] = 'employee';
+        }
+        $data['status'] = 'pending';
+
+        User::create($data);
 
         return response()->json([
-            'user' => $user,
-            'token' => $token,
+            'message' => 'Account created. Please wait for an administrator to approve it before you log in.',
         ], 201);
     }
 
@@ -31,6 +36,18 @@ class AuthController extends Controller
         if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
+            ]);
+        }
+
+        if ($user->status === 'pending') {
+            throw ValidationException::withMessages([
+                'email' => ['Your account is waiting for admin approval.'],
+            ]);
+        }
+
+        if ($user->status === 'suspended') {
+            throw ValidationException::withMessages([
+                'email' => ['Your account has been suspended. Please contact an administrator.'],
             ]);
         }
 

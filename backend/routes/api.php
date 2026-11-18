@@ -11,11 +11,12 @@ use App\Http\Controllers\Api\PrinterController;
 use App\Http\Controllers\Api\PrinterPartController;
 use App\Http\Controllers\Api\PrintingJobController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\UserManagementController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::middleware(['auth:sanctum', 'deny-recipient-writes'])->group(function () {
+Route::middleware(['auth:sanctum', 'active', 'deny-recipient-writes'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 
@@ -69,5 +70,10 @@ Route::middleware(['auth:sanctum', 'deny-recipient-writes'])->group(function () 
         Route::patch('/content-reports/{report}', [KnowledgeItemController::class, 'resolveReport']);
 
         Route::get('/analytics', [AnalyticsController::class, 'dashboard']);
+        
+        Route::get('/admin/users', [UserManagementController::class, 'index']);
+        Route::patch('/admin/users/{user}/approve', [UserManagementController::class, 'approve']);
+        Route::patch('/admin/users/{user}/suspend', [UserManagementController::class, 'suspend']);
+        Route::delete('/admin/users/{user}', [UserManagementController::class, 'destroy']);
     });
 });

@@ -12,13 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->api(prepend: [
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-        ]);
-
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,
             'deny-recipient-writes' => \App\Http\Middleware\DenyRecipientWrites::class,
+            'active' => \App\Http\Middleware\EnsureUserIsActive::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
