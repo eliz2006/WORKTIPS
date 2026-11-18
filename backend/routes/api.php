@@ -10,9 +10,9 @@ use App\Http\Controllers\Api\MaintenanceRecordController;
 use App\Http\Controllers\Api\PrinterController;
 use App\Http\Controllers\Api\PrinterPartController;
 use App\Http\Controllers\Api\PrintingJobController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\UserManagementController;
 use App\Http\Controllers\Api\SalesSummaryController;
+use App\Http\Controllers\Api\UserManagementController;
+use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -38,6 +38,7 @@ Route::middleware(['auth:sanctum', 'active', 'deny-recipient-writes'])->group(fu
 
     Route::apiResource('issues', IssueReportController::class)->only(['index', 'store', 'show']);
 
+    Route::get('/jobs/summary', SalesSummaryController::class);
     Route::get('/jobs', [PrintingJobController::class, 'index']);
     Route::post('/jobs', [PrintingJobController::class, 'store']);
     Route::put('/jobs/{printingJob}', [PrintingJobController::class, 'update']);
@@ -71,7 +72,7 @@ Route::middleware(['auth:sanctum', 'active', 'deny-recipient-writes'])->group(fu
         Route::patch('/content-reports/{report}', [KnowledgeItemController::class, 'resolveReport']);
 
         Route::get('/analytics', [AnalyticsController::class, 'dashboard']);
-        
+
         Route::get('/admin/users', [UserManagementController::class, 'index']);
         Route::patch('/admin/users/{user}/approve', [UserManagementController::class, 'approve']);
         Route::patch('/admin/users/{user}/suspend', [UserManagementController::class, 'suspend']);
