@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import api from '../api/client'
+import FilterBar, { periodLabel, periodRange } from '../components/FilterBar'
 import { DashSkeleton, DashStyles, Empty, Kpi, PageHeading, Panel, Pill, RankList } from '../components/DashKit'
 
 const COLORS = ['#7a5539', '#e0b46a', '#c6a786', '#a9805a', '#e5c7a7']
@@ -14,12 +15,15 @@ function money(n) {
 export default function AnalyticsDashboard() {
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
+  const [filter, setFilter] = useState({ month: '', year: String(new Date().getFullYear()) })
+  const [refreshing, setRefreshing] = useState(false)
+  const [pdfBusy, setPdfBusy] = useState(false)
 
   const load = useCallback(() => {
     setError('')
-    setData(null)
+    setRefreshing(true)
     api
-      .get('/analytics')
+      .get('/analytics', { params: periodRange(filter) })
       .then(({ data }) => setData(data))
       .catch((err) => {
         setError(
@@ -27,9 +31,20 @@ export default function AnalyticsDashboard() {
             (err.code === 'ERR_NETWORK' ? 'Cannot reach the server. Check your connection and try again. If the server was idle, wait a minute for it to wake up.' : err.message),
         )
       })
-  }, [])
+      .finally(() => setRefreshing(false))
+  }, [filter])
 
   useEffect(load, [load])
+
+  const downloadPdf = async () => {
+    setPdfBusy(true)
+    try {
+      const { downloadAnalyticsPdf } = await import('../lib/analyticsPdf')
+      downloadAnalyticsPdf(data, periodLabel(filter))
+    } finally {
+      setPdfBusy(false)
+    }
+  }
 
   if (error) {
     return (
@@ -47,9 +62,15 @@ export default function AnalyticsDashboard() {
   const attention = [...(data.maintenance_due || []).map((p) => ({ id: `m${p.id}`, name: p.name, pill: <Pill tone="amber">Due {p.next_maintenance_at}</Pill> })), ...(data.printers_with_problems || []).map((p) => ({ id: `i${p.id}`, name: p.name, pill: <Pill tone="red">{p.open_issues_count} open issues</Pill> }))]
 
   return (
-    <div>
+    <div className={refreshing ? 'opacity-60 transition-opacity' : 'transition-opacity'}>
       <DashStyles />
       <PageHeading title="Business analytics" sub="Live totals from printing jobs, ink logs, issues and maintenance." />
+      <FilterBar value={filter} onChange={setFilter}>
+        <span className="text-sm text-[#6b5a4c]">Showing: <strong>{periodLabel(filter)}</strong></span>
+        <button type="button" onClick={downloadPdf} disabled={pdfBusy} className="rounded-xl bg-[#7a5539] px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60">
+          {pdfBusy ? 'Preparing PDF...' : 'Download PDF report'}
+        </button>
+      </FilterBar>
 
       <div className="grid gap-4 md:grid-cols-4">
         <Kpi label="Total sales" value={k.total_sales} format={money} icon="₱" hint="Completed jobs in range" />
