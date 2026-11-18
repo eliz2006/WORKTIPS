@@ -18,53 +18,74 @@ const steps = [
   ['Read the floor', 'The dashboard reads those records live. There is nothing extra to update.'],
 ]
 
+const jobs = ['Tarpaulin', 'Stickers', 'Sublimation', 'Digital prints', 'Banners', 'Invitations', 'Mugs and shirts', 'Signage']
+
+const grain =
+  "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>\")"
+
 const css = `
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap');
 .wt{font-family:'Figtree',system-ui,sans-serif;color:#2c2118}
-.wt-serif{font-family:'Fraunces',Georgia,serif;letter-spacing:-0.015em}
-.wt a:focus-visible,.wt button:focus-visible{outline:3px solid #e0b46a;outline-offset:3px;border-radius:12px}
+.wt-serif{font-family:'Fraunces',Georgia,serif;letter-spacing:-0.02em}
+.wt a:focus-visible{outline:3px solid #e0b46a;outline-offset:3px;border-radius:12px}
 
-/* hero entrance: one sequence on load */
+/* headline: each line rises out of a mask, once */
+@keyframes wt-up{to{transform:none}}
 @keyframes wt-rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.wt-mask{display:block;overflow:hidden;padding-bottom:.14em}
+.wt-mask>span{display:block;transform:translateY(105%);animation:wt-up 1s cubic-bezier(.2,.7,.2,1) forwards}
 .wt-in{opacity:0;animation:wt-rise .8s cubic-bezier(.2,.7,.2,1) forwards}
 
-/* the press: roller sweeps across the sheet and prints it */
+/* mouse parallax (set from JS as --mx / --my in -1..1) */
+.wt-par{transition:transform .5s ease-out;will-change:transform}
+.wt-p1{transform:translate3d(calc(var(--mx,0)*-16px),calc(var(--my,0)*-10px),0)}
+.wt-p2{transform:translate3d(calc(var(--mx,0)*26px),calc(var(--my,0)*18px),0)}
+.wt-p3{transform:translate3d(calc(var(--mx,0)*-30px),calc(var(--my,0)*-22px),0)}
+
+/* the press */
 @keyframes wt-roll{0%{transform:translateX(0)}55%,85%{transform:translateX(340px)}100%{transform:translateX(0)}}
 @keyframes wt-print{0%{transform:scaleX(0)}55%,100%{transform:scaleX(1)}}
 @keyframes wt-fade{0%,85%{opacity:1}100%{opacity:0}}
-@keyframes wt-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes wt-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes wt-drop{0%{transform:translateY(-8px);opacity:0}15%{opacity:1}70%{opacity:1}100%{transform:translateY(56px);opacity:0}}
+@keyframes wt-flow{to{stroke-dashoffset:-48}}
+@keyframes wt-draw{0%,10%{stroke-dashoffset:420}55%,100%{stroke-dashoffset:0}}
+@keyframes wt-drift{0%,100%{transform:translate(0,0)}50%{transform:translate(28px,-20px)}}
 .wt-roller{animation:wt-roll 9s cubic-bezier(.45,0,.35,1) infinite}
 .wt-reveal{transform-box:fill-box;transform-origin:left center;animation:wt-print 9s cubic-bezier(.45,0,.35,1) infinite}
 .wt-ink{animation:wt-fade 9s linear infinite}
 .wt-press{animation:wt-bob 7s ease-in-out infinite}
-
-/* flowing ink and gently drifting shapes */
-@keyframes wt-drop{0%{transform:translateY(-8px);opacity:0}15%{opacity:1}70%{opacity:1}100%{transform:translateY(56px);opacity:0}}
-@keyframes wt-flow{to{stroke-dashoffset:-48}}
-@keyframes wt-drift{0%,100%{transform:translate(0,0)}50%{transform:translate(28px,-20px)}}
 .wt-drop{animation:wt-drop 3.2s ease-in infinite}
 .wt-flow{stroke-dasharray:14 10;animation:wt-flow 2.4s linear infinite}
+.wt-trend{stroke-dasharray:420;animation:wt-draw 9s cubic-bezier(.45,0,.35,1) infinite}
 .wt-drift{animation:wt-drift 14s ease-in-out infinite}
 .wt-drift-b{animation:wt-drift 18s ease-in-out infinite reverse}
 
-/* soft hover motion */
-.wt-lift{transition:transform .25s ease,box-shadow .25s ease}
-.wt-lift:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(44,33,24,.14)}
-.wt-item{transition:border-color .25s ease,transform .25s ease}
-.wt-item:hover{border-color:#c6a786;transform:translateX(4px)}
+/* band of job types */
+@keyframes wt-marquee{to{transform:translateX(-50%)}}
+.wt-band{display:flex;width:max-content;animation:wt-marquee 38s linear infinite}
+.wt-band:hover{animation-play-state:paused}
 
-/* timeline line draws when scrolled into view */
+/* timeline */
+@keyframes wt-travel{0%{left:0;opacity:0}8%{opacity:1}92%{opacity:1}100%{left:calc(100% - 14px);opacity:0}}
 .wt-line{transform-origin:left;transform:scaleX(0);transition:transform 1.6s cubic-bezier(.4,0,.2,1)}
 .wt-seen .wt-line{transform:scaleX(1)}
 .wt-dot{opacity:0;transform:scale(.6);transition:opacity .4s,transform .4s}
 .wt-seen .wt-dot{opacity:1;transform:none}
+.wt-travel{opacity:0}
+.wt-seen .wt-travel{animation:wt-travel 6s ease-in-out 1.8s infinite}
+
+/* hover */
+.wt-lift{transition:transform .25s ease,box-shadow .25s ease}
+.wt-lift:hover{transform:translateY(-3px);box-shadow:0 12px 26px rgba(44,33,24,.18)}
+.wt-item{transition:border-color .25s ease,transform .25s ease}
+.wt-item:hover{border-color:#c6a786;transform:translateX(4px)}
 
 @media (prefers-reduced-motion:reduce){
-  .wt-in{animation:none;opacity:1}
-  .wt-roller,.wt-reveal,.wt-ink,.wt-press,.wt-drop,.wt-flow,.wt-drift,.wt-drift-b{animation:none}
-  .wt-lift:hover,.wt-item:hover{transform:none}
+  .wt *,.wt *::before{animation:none!important;transition:none!important}
+  .wt-mask>span,.wt-in{transform:none;opacity:1}
   .wt-reveal{transform:none}.wt-roller{transform:translateX(340px)}
-  .wt-line,.wt-dot{transition:none;transform:none;opacity:1}
+  .wt-trend{stroke-dashoffset:0}.wt-line,.wt-dot{transform:none;opacity:1}
 }
 `
 
@@ -81,14 +102,16 @@ function useSeen() {
   return [ref, seen]
 }
 
+const heights = [30, 52, 40, 74, 60, 92]
+const barColors = ['#1f9bd1', '#d6336c', '#f2c230', '#2c2118', '#1f9bd1', '#d6336c']
+
 function PressArt() {
-  const bars = ['#1f9bd1', '#d6336c', '#f2c230', '#2c2118']
   return (
-    <svg viewBox="0 0 480 400" role="img" aria-label="A printing press roller printing a sheet with color bars" className="wt-press h-auto w-full">
+    <svg viewBox="0 0 480 400" role="img" aria-label="A printing press roller printing a sheet that turns into a sales chart" className="wt-press h-auto w-full">
       <defs>
         <linearGradient id="wt-roll" x1="0" x2="1">
           <stop offset="0" stopColor="#8a6a4a" />
-          <stop offset=".45" stopColor="#e9d3ae" />
+          <stop offset=".45" stopColor="#f0dcb8" />
           <stop offset="1" stopColor="#6b4c33" />
         </linearGradient>
         <clipPath id="wt-clip">
@@ -101,16 +124,19 @@ function PressArt() {
 
       <g clipPath="url(#wt-clip)">
         <g className="wt-ink">
-          <rect x="96" y="172" width="150" height="12" rx="3" fill="#2c2118" />
-          <rect x="96" y="196" width="230" height="6" rx="3" fill="#c6a786" />
-          <rect x="96" y="210" width="190" height="6" rx="3" fill="#c6a786" />
-          {bars.map((c, i) => (
-            <rect key={c} x={96 + i * 74} y="250" width="66" height="50" rx="4" fill={c} />
+          <rect x="96" y="170" width="130" height="12" rx="3" fill="#2c2118" />
+          <rect x="96" y="190" width="190" height="6" rx="3" fill="#c6a786" />
+          <path d="M96 308H384" stroke="#e0d2c2" strokeWidth="2" />
+          {heights.map((h, i) => (
+            <rect key={i} x={96 + i * 51} y={306 - h} width="34" height={h} rx="4" fill={barColors[i]} />
+          ))}
+          <path className="wt-trend" d="M113 262L164 244L215 252L266 224L317 232L368 206" fill="none" stroke="#7a5539" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+          {[[113, 262], [164, 244], [215, 252], [266, 224], [317, 232], [368, 206]].map(([x, y]) => (
+            <circle key={x} cx={x} cy={y} r="5" fill="#fbf7f2" stroke="#7a5539" strokeWidth="3" />
           ))}
         </g>
       </g>
 
-      {/* crop marks */}
       {[[70, 150, 1, 1], [410, 150, -1, 1], [70, 330, 1, -1], [410, 330, -1, -1]].map(([x, y, sx, sy]) => (
         <path key={`${x}${y}`} d={`M${x - 14 * sx} ${y}h8M${x} ${y - 14 * sy}v8`} stroke="#c6a786" strokeWidth="1.5" fill="none" />
       ))}
@@ -119,7 +145,7 @@ function PressArt() {
         <g className="wt-roller">
           <ellipse cx="0" cy="348" rx="22" ry="5" fill="#000" opacity=".25" />
           <rect x="-15" y="128" width="30" height="220" rx="15" fill="url(#wt-roll)" />
-          <rect x="-9" y="140" width="4" height="196" rx="2" fill="#fff" opacity=".35" />
+          <rect x="-9" y="140" width="4" height="196" rx="2" fill="#fff" opacity=".4" />
         </g>
       </g>
 
@@ -136,6 +162,16 @@ export default function Landing() {
   const { user } = useAuth()
   const enterTo = user ? '/app' : '/login'
   const [flowRef, flowSeen] = useSeen()
+
+  const onMove = (e) => {
+    const r = e.currentTarget.getBoundingClientRect()
+    e.currentTarget.style.setProperty('--mx', ((e.clientX - r.left) / r.width - 0.5) * 2)
+    e.currentTarget.style.setProperty('--my', ((e.clientY - r.top) / r.height - 0.5) * 2)
+  }
+  const onLeave = (e) => {
+    e.currentTarget.style.setProperty('--mx', 0)
+    e.currentTarget.style.setProperty('--my', 0)
+  }
 
   return (
     <div className="wt min-h-screen bg-[#f3ebe0]">
@@ -166,18 +202,26 @@ export default function Landing() {
       </header>
 
       <main id="top">
-        <section className="relative overflow-hidden bg-[#2c2118] text-[#f6efe6]">
-          <div aria-hidden="true" className="wt-drift pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full bg-[#7a5539]/50 blur-3xl" />
-          <div aria-hidden="true" className="wt-drift-b pointer-events-none absolute bottom-0 left-1/4 h-56 w-56 rounded-full bg-[#e0b46a]/20 blur-3xl" />
-          <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-2 lg:py-24">
+        <section onMouseMove={onMove} onMouseLeave={onLeave} className="relative overflow-hidden bg-[#2c2118] text-[#f6efe6]">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-[.09] mix-blend-overlay" style={{ backgroundImage: grain }} />
+          <div aria-hidden="true" className="wt-par wt-p2 pointer-events-none absolute -right-20 -top-24">
+            <div className="wt-drift h-96 w-96 rounded-full bg-[#7a5539]/55 blur-3xl" />
+          </div>
+          <div aria-hidden="true" className="wt-par wt-p3 pointer-events-none absolute bottom-0 left-1/4">
+            <div className="wt-drift-b h-64 w-64 rounded-full bg-[#e0b46a]/20 blur-3xl" />
+          </div>
+
+          <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-2 lg:py-28">
             <div>
-              <h1 className="wt-serif wt-in text-4xl font-semibold leading-[1.1] sm:text-6xl">
-                Every solution starts with sharing.
+              <h1 className="wt-serif text-5xl font-semibold leading-[1.05] sm:text-7xl">
+                <span className="wt-mask"><span>Every solution</span></span>
+                <span className="wt-mask"><span style={{ animationDelay: '.15s' }}>starts with</span></span>
+                <span className="wt-mask"><span style={{ animationDelay: '.3s' }} className="text-[#e0b46a]">sharing.</span></span>
               </h1>
-              <p className="wt-in mt-6 max-w-md text-lg leading-8 text-[#e8dccf]" style={{ animationDelay: '.15s' }}>
-                Keep your press floor&rsquo;s know-how, jobs and machine problems in one place, and see sales and ink use update as work gets done.
+              <p className="wt-in mt-6 max-w-md text-lg leading-8 text-[#e8dccf]" style={{ animationDelay: '.7s' }}>
+                Keep your press floor&rsquo;s know-how, jobs and machine problems in one place, and watch sales and ink use update as work gets done.
               </p>
-              <div className="wt-in mt-8 flex flex-wrap gap-3" style={{ animationDelay: '.3s' }}>
+              <div className="wt-in mt-8 flex flex-wrap gap-3" style={{ animationDelay: '.9s' }}>
                 <Link to={enterTo} className="wt-lift rounded-xl bg-[#e0b46a] px-6 py-3 font-semibold text-[#2c2118]">
                   {user ? 'Continue to workspace' : 'Sign in'}
                 </Link>
@@ -188,18 +232,31 @@ export default function Landing() {
                 )}
               </div>
             </div>
-            <div className="wt-in mx-auto w-full max-w-md lg:max-w-none" style={{ animationDelay: '.25s' }}>
-              <PressArt />
+            <div className="wt-in mx-auto w-full max-w-md lg:max-w-none" style={{ animationDelay: '.4s' }}>
+              <div className="wt-par wt-p1">
+                <PressArt />
+              </div>
             </div>
           </div>
         </section>
 
-        <section id="modules" className="mx-auto max-w-6xl px-5 py-20">
-          <h2 className="wt-serif max-w-xl text-3xl font-semibold sm:text-4xl">One place for what your shop knows and what it prints.</h2>
-          <p className="mt-4 max-w-xl text-[#6b5a4c]">
-            Made for tarpaulin, sticker, sublimation and digital shops that still keep procedures in notebooks and sales in spreadsheets.
+        <div aria-hidden="true" className="overflow-hidden bg-[#e0b46a] py-4 text-[#2c2118]">
+          <div className="wt-band">
+            {[...jobs, ...jobs].map((j, i) => (
+              <span key={i} className="wt-serif flex items-center whitespace-nowrap text-xl font-semibold">
+                <span className="px-8">{j}</span>
+                <svg width="10" height="10" viewBox="0 0 10 10"><rect x="1" y="1" width="8" height="8" transform="rotate(45 5 5)" fill="#7a5539" /></svg>
+              </span>
+            ))}
+          </div>
+        </div>
+
+        <section id="modules" className="mx-auto max-w-6xl px-5 py-24">
+          <h2 className="wt-serif max-w-xl text-3xl font-semibold sm:text-5xl">One place for what your shop knows and what it prints.</h2>
+          <p className="mt-4 max-w-xl text-lg text-[#6b5a4c]">
+            Made for shops that still keep procedures in notebooks and sales in spreadsheets.
           </p>
-          <dl className="mt-12 grid gap-x-12 gap-y-10 md:grid-cols-2">
+          <dl className="mt-14 grid gap-x-12 gap-y-10 md:grid-cols-2">
             {modules.map(([title, body]) => (
               <div key={title} className="wt-item border-t-2 border-[#2c2118] pt-4">
                 <dt className="wt-serif text-xl font-semibold">{title}</dt>
@@ -213,18 +270,16 @@ export default function Landing() {
         </section>
 
         <section id="flow" className="border-y border-[#e0d2c2] bg-[#fbf7f2]">
-          <div ref={flowRef} className={`mx-auto max-w-6xl px-5 py-20 ${flowSeen ? 'wt-seen' : ''}`}>
-            <h2 className="wt-serif max-w-xl text-3xl font-semibold sm:text-4xl">Jobs and issues feed the dashboard on their own.</h2>
-            <div className="relative mt-14">
+          <div ref={flowRef} className={`mx-auto max-w-6xl px-5 py-24 ${flowSeen ? 'wt-seen' : ''}`}>
+            <h2 className="wt-serif max-w-xl text-3xl font-semibold sm:text-5xl">Jobs and issues feed the dashboard on their own.</h2>
+            <div className="relative mt-16">
               <div className="absolute left-0 right-0 top-5 hidden h-0.5 bg-[#e0d2c2] md:block" />
               <div className="wt-line absolute left-0 right-0 top-5 hidden h-0.5 bg-[#7a5539] md:block" />
+              <div className="relative hidden md:block"><span className="wt-travel absolute top-[14px] h-3.5 w-3.5 rounded-full bg-[#e0b46a] shadow-[0_0_14px_#e0b46a]" /></div>
               <ol className="relative grid gap-8 md:grid-cols-4">
                 {steps.map(([title, text], i) => (
                   <li key={title}>
-                    <span
-                      className="wt-dot grid h-10 w-10 place-items-center rounded-full bg-[#7a5539] font-semibold text-white"
-                      style={{ transitionDelay: `${i * 0.4}s` }}
-                    >
+                    <span className="wt-dot grid h-10 w-10 place-items-center rounded-full bg-[#7a5539] font-semibold text-white" style={{ transitionDelay: `${i * 0.4}s` }}>
                       {i + 1}
                     </span>
                     <h3 className="wt-serif mt-4 text-xl font-semibold">{title}</h3>
@@ -239,10 +294,10 @@ export default function Landing() {
           </div>
         </section>
 
-        <section id="roles" className="mx-auto max-w-6xl px-5 py-20">
-          <h2 className="wt-serif text-3xl font-semibold sm:text-4xl">Pick the access you need.</h2>
-          <p className="mt-3 text-[#6b5a4c]">An administrator approves every new account before it can sign in.</p>
-          <div className="mt-10 grid gap-5 lg:grid-cols-2">
+        <section id="roles" className="mx-auto max-w-6xl px-5 py-24">
+          <h2 className="wt-serif text-3xl font-semibold sm:text-5xl">Pick the access you need.</h2>
+          <p className="mt-3 text-lg text-[#6b5a4c]">An administrator approves every new account before it can sign in.</p>
+          <div className="mt-12 grid gap-5 lg:grid-cols-2">
             <article className="wt-lift rounded-3xl border border-[#e0d2c2] bg-[#fbf7f2] p-8">
               <h3 className="wt-serif text-2xl font-semibold">Recipient</h3>
               <p className="mt-1 text-[#6b5a4c]">View only</p>
@@ -264,15 +319,16 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="px-5 pb-20">
-          <div className="mx-auto max-w-6xl rounded-3xl bg-[#7a5539] px-8 py-14 text-center text-white sm:px-16">
-            <h2 className="wt-serif text-3xl font-semibold sm:text-4xl">Ready for the press floor?</h2>
-            <p className="mx-auto mt-3 max-w-md text-[#f1e3d0]">
-              Create an account, then wait for an administrator to approve it.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <Link to="/register" className="wt-lift rounded-xl bg-[#fbf7f2] px-6 py-3 font-semibold text-[#2c2118]">Create account</Link>
-              <Link to="/login" className="rounded-xl border border-white/40 px-6 py-3 font-medium transition hover:bg-white/10">Sign in</Link>
+        <section className="px-5 pb-24">
+          <div className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-[#7a5539] px-8 py-16 text-center text-white sm:px-16">
+            <div aria-hidden="true" className="wt-drift pointer-events-none absolute -left-16 -top-16 h-64 w-64 rounded-full bg-[#e0b46a]/30 blur-3xl" />
+            <div className="relative">
+              <h2 className="wt-serif text-3xl font-semibold sm:text-5xl">Ready for the press floor?</h2>
+              <p className="mx-auto mt-3 max-w-md text-lg text-[#f1e3d0]">Create an account, then wait for an administrator to approve it.</p>
+              <div className="mt-8 flex flex-wrap justify-center gap-3">
+                <Link to="/register" className="wt-lift rounded-xl bg-[#fbf7f2] px-6 py-3 font-semibold text-[#2c2118]">Create account</Link>
+                <Link to="/login" className="wt-lift rounded-xl border border-white/40 px-6 py-3 font-medium hover:bg-white/10">Sign in</Link>
+              </div>
             </div>
           </div>
         </section>
