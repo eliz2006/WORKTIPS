@@ -38,7 +38,7 @@ export default function Register() {
     } catch (err) {
       const first = err.response?.data?.errors
       const fromFields = first ? Object.values(first).flat()[0] : null
-      setError(fromFields || err.response?.data?.message || 'Registration failed.')
+      setError(fromFields || err.response?.data?.message || 'Registration failed. Please try again.')
     }
   }
 
@@ -54,7 +54,13 @@ export default function Register() {
         <div className="block text-xs tracking-[0.22em] text-press">WORKTIPS</div>
         <h1 className="mt-2 text-3xl font-semibold">Create account</h1>
         <p className="mt-2 text-sm text-[#7a6a5c]">Choose Recipient (view only) or Employee.</p>
-        {error && <p className="mt-4 text-sm text-rose-700">{error}</p>}
+
+        {/* Better error message */}
+        {error && (
+          <div className="mt-4 rounded-xl bg-rose-100 border border-rose-300 p-4 text-sm font-medium text-rose-800">
+            {error}
+          </div>
+        )}
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           {roles.map((role) => (
@@ -84,10 +90,16 @@ export default function Register() {
             />
           </label>
         ))}
+
         <label className="mt-4 block text-sm">
           Password
-          <PasswordInput value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+          <PasswordInput
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            required
+          />
         </label>
+
         <label className="mt-4 block text-sm">
           Confirm password
           <PasswordInput
@@ -96,7 +108,11 @@ export default function Register() {
             required
           />
         </label>
-        <button className="mt-6 w-full rounded-xl bg-press py-3 text-white">Register as {form.role}</button>
+
+        <button className="mt-6 w-full rounded-xl bg-press py-3 text-white">
+          Register as {form.role}
+        </button>
+
         <p className="mt-4 text-center text-sm">
           <Link to="/login" className="text-press underline">
             Back to login
