@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import api from '../api/client'
 import Modal from '../components/Modal'
+import FilterBar, { fmtDate, inPeriod, periodParams } from '../components/FilterBar'
+import SalesSummary from '../components/SalesSummary'
 import { useAuth } from '../context/AuthContext'
 
 function money(n) {
@@ -13,6 +15,8 @@ export default function Jobs() {
   const [printers, setPrinters] = useState([])
   const [inks, setInks] = useState([])
   const [open, setOpen] = useState(false)
+  const [filter, setFilter] = useState({ month: '', year: '' })
+  const [refreshKey, setRefreshKey] = useState(0)
   const [form, setForm] = useState({
     printer_id: '',
     customer_name: '',
@@ -25,9 +29,16 @@ export default function Jobs() {
     ink_qty: '',
   })
 
-  const load = () => api.get('/jobs').then(({ data }) => setRows(data.data || []))
+  const load = () =>
+    api
+      .get('/jobs', { params: { ...periodParams(filter), per_page: 500 } })
+      .then(({ data }) => setRows(data.data || []))
+
   useEffect(() => {
     load()
+  }, [filter])
+
+  useEffect(() => {
     api.get('/printers').then(({ data }) => setPrinters(data))
     api.get('/ink-types').then(({ data }) => setInks(data))
   }, [])
@@ -41,7 +52,11 @@ export default function Jobs() {
     await api.post('/jobs', payload)
     setOpen(false)
     load()
+    setRefreshKey((k) => k + 1)
   }
+
+  const shown = rows.filter((r) => inPeriod(r.job_date, filter))
+  const shownTotal = shown.reduce((sum, r) => sum + Number(r.total_amount || 0), 0)
 
   return (
     <div>
@@ -51,11 +66,22 @@ export default function Jobs() {
           <p className="text-[#7a6a5c]">Each completed job feeds total sales, type mix, and monthly trend charts.</p>
         </div>
         {canWrite && (
-          <button className="rounded-xl bg-press px-4 py-2 text-white" onClick={() => setOpen(true)}>
+          <button className="rounded-xl bg-[#7a5539] px-4 py-2 text-white" onClick={() => setOpen(true)}>
             Record job
           </button>
         )}
       </div>
+
+      <FilterBar value={filter} onChange={setFilter}>
+        <span className="text-sm text-[#6b5a4c]">
+          {shown.length} {shown.length === 1 ? 'job' : 'jobs'}, <strong>{money(shownTotal)}</strong>
+        </span>
+      </FilterBar>
+
+      <div className="mb-6">
+        <SalesSummary filter={filter} refreshKey={refreshKey} />
+      </div>
+
       <div className="card overflow-auto">
         <table className="w-full text-sm">
           <thead className="bg-[#f6efe6] text-left">
@@ -69,7 +95,7 @@ export default function Jobs() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((j) => (
+            {shown.map((j) => (
               <tr key={j.id} className="border-t">
                 <td className="p-3">
                   <strong>{j.product_name}</strong>
@@ -79,9 +105,16 @@ export default function Jobs() {
                 <td>{j.printer?.name}</td>
                 <td>{j.quantity}</td>
                 <td>{money(j.total_amount)}</td>
-                <td>{j.job_date}</td>
+                <td>{fmtDate(j.job_date)}</td>
               </tr>
             ))}
+            {shown.length === 0 && (
+              <tr>
+                <td colSpan="6" className="p-6 text-center text-[#6b5a4c]">
+                  No jobs were recorded in this period.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -115,7 +148,7 @@ export default function Jobs() {
               ))}
             </select>
             <input className="rounded-xl border px-3 py-2" placeholder="Ink quantity (ml)" value={form.ink_qty} onChange={(e) => setForm({ ...form, ink_qty: e.target.value })} />
-            <button className="rounded-xl bg-press py-2 text-white">Save job</button>
+            <button className="rounded-xl bg-[#7a5539] py-2 text-white">Save job</button>
           </form>
         </Modal>
       )}

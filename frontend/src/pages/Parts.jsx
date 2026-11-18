@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import api from '../api/client'
 import Badge from '../components/Badge'
 import Modal from '../components/Modal'
+import FilterBar, { fmtDate, inPeriod } from '../components/FilterBar'
 
 const TYPES = [
   'printhead',
@@ -34,6 +35,7 @@ export default function Parts() {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [form, setForm] = useState(empty)
+  const [filter, setFilter] = useState({ month: '', year: '' })
 
   const load = () => {
     api.get('/parts').then(({ data }) => setRows(data))
@@ -75,14 +77,23 @@ export default function Parts() {
     load()
   }
 
+  const shown = rows.filter((r) => inPeriod(r.created_at, filter))
+
   return (
     <div>
       <div className="mb-5 flex justify-between">
         <h1 className="text-3xl font-semibold">Printer Parts Catalog</h1>
-        <button className="rounded-xl bg-press px-4 py-2 text-white" onClick={startCreate}>
+        <button className="rounded-xl bg-[#7a5539] px-4 py-2 text-white" onClick={startCreate}>
           Add part
         </button>
       </div>
+
+      <FilterBar value={filter} onChange={setFilter}>
+        <span className="text-sm text-[#6b5a4c]">
+          Filtered by date added, {shown.length} {shown.length === 1 ? 'part' : 'parts'}
+        </span>
+      </FilterBar>
+
       <div className="card overflow-auto">
         <table className="w-full text-sm">
           <thead className="bg-[#f6efe6] text-left">
@@ -93,11 +104,12 @@ export default function Parts() {
               <th>Qty</th>
               <th>Compatible</th>
               <th>Condition</th>
+              <th>Added</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((p) => (
+            {shown.map((p) => (
               <tr key={p.id} className="border-t">
                 <td className="p-3 font-medium">{p.name}</td>
                 <td>{p.sku}</td>
@@ -107,6 +119,7 @@ export default function Parts() {
                 <td>
                   <Badge>{p.condition}</Badge>
                 </td>
+                <td>{fmtDate(p.created_at)}</td>
                 <td className="space-x-2 p-3 whitespace-nowrap">
                   <button className="rounded-lg border px-2 py-1" onClick={() => startEdit(p)}>
                     Edit
@@ -117,6 +130,13 @@ export default function Parts() {
                 </td>
               </tr>
             ))}
+            {shown.length === 0 && (
+              <tr>
+                <td colSpan="8" className="p-6 text-center text-[#6b5a4c]">
+                  No parts were added in this period.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -148,7 +168,7 @@ export default function Parts() {
                 </option>
               ))}
             </select>
-            <button className="rounded-xl bg-press py-2 text-white">{editing ? 'Update' : 'Save'}</button>
+            <button className="rounded-xl bg-[#7a5539] py-2 text-white">{editing ? 'Update' : 'Save'}</button>
           </form>
         </Modal>
       )}

@@ -28,6 +28,29 @@ export function periodLabel({ month, year }) {
   return 'All time'
 }
 
+function parseDate(v) {
+  if (!v) return null
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v)
+  const d = m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date(v)
+  return Number.isNaN(d.getTime()) ? null : d
+}
+
+/** "Dec 16, 2026" instead of 2026-12-15T16:00:00.000000Z */
+export function fmtDate(v) {
+  const d = parseDate(v)
+  return d ? d.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' }) : v || '—'
+}
+
+/** true when the date falls in the chosen month / year (blank = no filter) */
+export function inPeriod(v, { month, year }) {
+  if (!month && !year) return true
+  const d = parseDate(v)
+  if (!d) return false
+  const y = year ? Number(year) : new Date().getFullYear()
+  if (d.getFullYear() !== y) return false
+  return !month || d.getMonth() + 1 === Number(month)
+}
+
 const sel = 'rounded-xl border border-[#e0d2c2] bg-white px-3 py-2 text-sm outline-none focus:border-[#7a5539] focus:ring-4 focus:ring-[#e0b46a]/35'
 
 export default function FilterBar({ value, onChange, roles, children }) {

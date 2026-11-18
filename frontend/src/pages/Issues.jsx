@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import api from '../api/client'
 import Badge from '../components/Badge'
 import Modal from '../components/Modal'
+import FilterBar, { fmtDate, inPeriod, periodParams } from '../components/FilterBar'
 import { useAuth } from '../context/AuthContext'
 
 export default function Issues() {
@@ -11,10 +12,18 @@ export default function Issues() {
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState({ printer_id: '', title: '', details: '', priority: 'medium' })
   const [solutions, setSolutions] = useState([])
+  const [filter, setFilter] = useState({ month: '', year: '' })
 
-  const load = () => api.get('/issues').then(({ data }) => setRows(data.data || []))
+  const load = () =>
+    api
+      .get('/issues', { params: { ...periodParams(filter), per_page: 500 } })
+      .then(({ data }) => setRows(data.data || []))
+
   useEffect(() => {
     load()
+  }, [filter])
+
+  useEffect(() => {
     api.get('/printers').then(({ data }) => setPrinters(data))
   }, [])
 
@@ -36,28 +45,38 @@ export default function Issues() {
     load()
   }
 
+  const shown = rows.filter((r) => inPeriod(r.created_at, filter))
+
   return (
     <div>
       <div className="mb-5 flex justify-between">
         <h1 className="text-3xl font-semibold">{isAdmin ? 'Issue Reports & Maintenance' : canWrite ? 'My Issue Reports' : 'Issue Reports'}</h1>
         {canWrite && (
-          <button className="rounded-xl bg-press px-4 py-2 text-white" onClick={() => setOpen(true)}>
+          <button className="rounded-xl bg-[#7a5539] px-4 py-2 text-white" onClick={() => setOpen(true)}>
             Report issue
           </button>
         )}
       </div>
+
+      <FilterBar value={filter} onChange={setFilter}>
+        <span className="text-sm text-[#6b5a4c]">
+          {shown.length} {shown.length === 1 ? 'report' : 'reports'}
+        </span>
+      </FilterBar>
+
       <div className="card overflow-auto">
         <table className="w-full text-sm">
           <thead className="bg-[#f6efe6] text-left">
             <tr>
               <th className="p-3">Issue</th>
+              <th>Reported</th>
               <th>Priority</th>
               <th>Status</th>
               {isAdmin && <th></th>}
             </tr>
           </thead>
           <tbody>
-            {rows.map((i) => (
+            {shown.map((i) => (
               <tr key={i.id} className="border-t">
                 <td className="p-3">
                   <strong>{i.title}</strong>
@@ -66,6 +85,7 @@ export default function Issues() {
                   </div>
                   {i.recommended_solution && <p className="mt-2 whitespace-pre-wrap text-[#5c4a3d]">{i.recommended_solution}</p>}
                 </td>
+                <td className="whitespace-nowrap">{fmtDate(i.created_at)}</td>
                 <td>
                   <Badge>{i.priority}</Badge>
                 </td>
@@ -81,6 +101,13 @@ export default function Issues() {
                 )}
               </tr>
             ))}
+            {shown.length === 0 && (
+              <tr>
+                <td colSpan={isAdmin ? 5 : 4} className="p-6 text-center text-[#6b5a4c]">
+                  No issues were reported in this period.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -108,7 +135,7 @@ export default function Issues() {
             </select>
             <textarea className="rounded-xl border px-3 py-2" rows="4" placeholder="What happened?" value={form.details} onChange={(e) => setForm({ ...form, details: e.target.value })} required />
             {solutions[0] && <p className="text-xs text-[#7a6a5c]">A matching procedure will be attached automatically when possible.</p>}
-            <button className="rounded-xl bg-press py-2 text-white">Submit report</button>
+            <button className="rounded-xl bg-[#7a5539] py-2 text-white">Submit report</button>
           </form>
         </Modal>
       )}

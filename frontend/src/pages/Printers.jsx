@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import api from '../api/client'
 import Badge from '../components/Badge'
 import Modal from '../components/Modal'
+import FilterBar, { fmtDate, inPeriod } from '../components/FilterBar'
 import { useAuth } from '../context/AuthContext'
 
 const empty = {
@@ -27,6 +28,8 @@ export default function Printers() {
   const [editing, setEditing] = useState(null)
   const [detail, setDetail] = useState(null)
   const [form, setForm] = useState(empty)
+  const [filter, setFilter] = useState({ month: '', year: '' })
+  const [dateField, setDateField] = useState('next_maintenance_at')
 
   const load = () => api.get('/printers').then(({ data }) => setRows(data))
   useEffect(() => {
@@ -80,6 +83,8 @@ export default function Printers() {
     setDetail(data)
   }
 
+  const shown = rows.filter((r) => inPeriod(r[dateField], filter))
+
   return (
     <div>
       <div className="mb-5 flex justify-between">
@@ -88,11 +93,29 @@ export default function Printers() {
           <p className="text-[#7a6a5c]">Models, compatible ink, condition, common problems, and maintenance dates.</p>
         </div>
         {isAdmin && (
-          <button className="rounded-xl bg-press px-4 py-2 text-white" onClick={startCreate}>
+          <button className="rounded-xl bg-[#7a5539] px-4 py-2 text-white" onClick={startCreate}>
             Add printer
           </button>
         )}
       </div>
+
+      <FilterBar value={filter} onChange={setFilter}>
+        <label className="text-sm">
+          <span className="mb-1 block font-medium text-[#6b5a4c]">Filter by</span>
+          <select
+            className="rounded-xl border border-[#e0d2c2] bg-white px-3 py-2 text-sm outline-none focus:border-[#7a5539]"
+            value={dateField}
+            onChange={(e) => setDateField(e.target.value)}
+          >
+            <option value="next_maintenance_at">Next service date</option>
+            <option value="created_at">Date added</option>
+          </select>
+        </label>
+        <span className="text-sm text-[#6b5a4c]">
+          {shown.length} {shown.length === 1 ? 'printer' : 'printers'}
+        </span>
+      </FilterBar>
+
       <div className="card overflow-auto">
         <table className="w-full text-sm">
           <thead className="bg-[#f6efe6] text-left">
@@ -108,7 +131,7 @@ export default function Printers() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((p) => (
+            {shown.map((p) => (
               <tr key={p.id} className="border-t">
                 <td className="p-3">
                   <button className="text-left" onClick={() => openDetail(p)}>
@@ -125,7 +148,7 @@ export default function Printers() {
                 <td>
                   <Badge>{p.condition}</Badge>
                 </td>
-                <td>{p.next_maintenance_at || '—'}</td>
+                <td>{p.next_maintenance_at ? fmtDate(p.next_maintenance_at) : '—'}</td>
                 {isAdmin && (
                   <td className="space-x-2 p-3 whitespace-nowrap">
                     <button className="rounded-lg border px-2 py-1" onClick={() => startEdit(p)}>
@@ -138,6 +161,13 @@ export default function Printers() {
                 )}
               </tr>
             ))}
+            {shown.length === 0 && (
+              <tr>
+                <td colSpan={isAdmin ? 8 : 7} className="p-6 text-center text-[#6b5a4c]">
+                  No printers match this filter.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -170,7 +200,7 @@ export default function Printers() {
               <strong>Recent maintenance</strong>
               {detail.maintenance_records?.slice(0, 5).map((m) => (
                 <div key={m.id} className="mt-1 text-[#7a6a5c]">
-                  {m.work_type} · {m.performed_at}
+                  {m.work_type} · {fmtDate(m.performed_at)}
                 </div>
               ))}
             </div>
@@ -259,13 +289,13 @@ export default function Printers() {
               ))}
               <button
                 type="button"
-                className="text-sm text-press"
+                className="text-sm text-[#7a5539]"
                 onClick={() => setForm({ ...form, common_problems: [...form.common_problems, { title: '', description: '', recommended_solution: '' }] })}
               >
                 + Add problem
               </button>
             </div>
-            <button className="rounded-xl bg-press py-2 text-white">{editing ? 'Update printer' : 'Save printer'}</button>
+            <button className="rounded-xl bg-[#7a5539] py-2 text-white">{editing ? 'Update printer' : 'Save printer'}</button>
           </form>
         </Modal>
       )}
