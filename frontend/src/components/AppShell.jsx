@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 const employeeNav = [
@@ -37,9 +37,29 @@ const adminNav = [
   ['/app/ink', 'Ink Usage'],
 ]
 
+const css = `
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Figtree:wght@400;500;600&display=swap');
+.sh{font-family:'Figtree',system-ui,sans-serif;color:#2c2118}
+.sh-serif{font-family:'Fraunces',Georgia,serif;letter-spacing:-0.02em}
+.sh h1,.sh h2,.sh h3{font-family:'Fraunces',Georgia,serif;letter-spacing:-0.02em}
+.sh a:focus-visible,.sh button:focus-visible{outline:3px solid #e0b46a;outline-offset:2px;border-radius:12px}
+@keyframes sh-page{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes sh-drift{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,-16px)}}
+@keyframes sh-flow{to{stroke-dashoffset:-48}}
+.sh-page{animation:sh-page .45s cubic-bezier(.2,.7,.2,1)}
+.sh-drift{animation:sh-drift 14s ease-in-out infinite}
+.sh-flow{stroke-dasharray:10 8;animation:sh-flow 2.4s linear infinite}
+.sh-link{position:relative;transition:background .2s,color .2s,transform .2s}
+.sh-link:hover{transform:translateX(3px)}
+.sh-link::before{content:'';position:absolute;left:0;top:25%;bottom:25%;width:3px;border-radius:3px;background:#e0b46a;transform:scaleY(0);transition:transform .25s}
+.sh-active::before{transform:scaleY(1)}
+@media (prefers-reduced-motion:reduce){.sh *{animation:none!important;transition:none!important}}
+`
+
 export default function AppShell() {
   const { user, isAdmin, isRecipient, roleLabel, logout } = useAuth()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const nav = isAdmin ? adminNav : isRecipient ? recipientNav : employeeNav
   const initials = user?.name
     ?.split(' ')
@@ -49,36 +69,41 @@ export default function AppShell() {
     .toUpperCase()
 
   return (
-    <div className="min-h-screen bg-[#efe6db] text-ink">
-      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-[#e0d2c2] bg-[#2c2118] text-[#f6efe6] md:flex md:flex-col">
-        <div className="px-5 py-6">
-          <div className="text-xs tracking-[0.2em] text-gold">WORKTIPS</div>
-          <div className="mt-1 text-lg font-semibold">Press Knowledge</div>
+    <div className="sh min-h-screen bg-[#f3ebe0]">
+      <style>{css}</style>
+
+      <aside className="fixed inset-y-0 left-0 hidden w-64 overflow-hidden bg-[#2c2118] text-[#f6efe6] md:flex md:flex-col">
+        <div aria-hidden="true" className="sh-drift pointer-events-none absolute -left-20 -top-20 h-64 w-64 rounded-full bg-[#7a5539]/50 blur-3xl" />
+        <div className="relative px-5 py-6">
+          <div className="sh-serif text-2xl font-semibold text-[#e8bf74]">PrinTour</div>
+          <svg width="120" height="8" viewBox="0 0 120 8" className="mt-2" aria-hidden="true">
+            <path className="sh-flow" d="M3 4H117" stroke="#e0b46a" strokeWidth="3" strokeLinecap="round" fill="none" />
+          </svg>
         </div>
-        <nav className="flex-1 space-y-1 px-3">
+        <nav className="relative flex-1 space-y-1 overflow-y-auto px-3 pb-3">
           {nav.map(([to, label]) => (
             <NavLink
               key={to}
               to={to}
               end={to === '/app'}
               className={({ isActive }) =>
-                `block rounded-xl px-3 py-2.5 text-sm ${isActive ? 'bg-press text-white' : 'text-[#e8dccf] hover:bg-white/10'}`
+                `sh-link block rounded-xl px-4 py-2.5 text-sm ${isActive ? 'sh-active bg-white/10 font-semibold text-white' : 'text-[#e8dccf] hover:bg-white/5'}`
               }
             >
               {label}
             </NavLink>
           ))}
         </nav>
-        <div className="border-t border-white/10 p-4">
+        <div className="relative border-t border-white/10 p-4">
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded-full bg-press text-sm font-semibold">{initials}</div>
-            <div>
-              <div className="text-sm font-medium">{user?.name}</div>
-              <div className="text-xs text-gold">{roleLabel}</div>
+            <div className="grid h-10 w-10 place-items-center rounded-full bg-[#e0b46a] text-sm font-semibold text-[#2c2118]">{initials}</div>
+            <div className="min-w-0">
+              <div className="truncate text-sm font-medium">{user?.name}</div>
+              <div className="text-xs text-[#c6a786]">{roleLabel}</div>
             </div>
           </div>
           <button
-            className="mt-3 w-full rounded-xl border border-white/15 px-3 py-2 text-sm"
+            className="mt-3 w-full rounded-xl border border-white/15 px-3 py-2 text-sm transition hover:bg-white/10"
             onClick={async () => {
               await logout()
               navigate('/login')
@@ -88,30 +113,34 @@ export default function AppShell() {
           </button>
         </div>
       </aside>
+
       <main className="md:pl-64">
-        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-[#e5d8c8] bg-[#fbf7f2]/90 px-6 py-4 backdrop-blur">
+        <header className="sticky top-0 z-20 flex items-center justify-between border-b border-[#e0d2c2] bg-[#fbf7f2]/90 px-6 py-4 backdrop-blur">
           <div>
-            <div className="text-[11px] tracking-[0.18em] text-[#8a7b6d]">
-              {isAdmin ? 'ADMINISTRATOR WORKSPACE' : isRecipient ? 'RECIPIENT WORKSPACE' : 'EMPLOYEE WORKSPACE'}
+            <div className="text-sm text-[#8a7b6d]">
+              {isAdmin ? 'Administrator workspace' : isRecipient ? 'Recipient workspace' : 'Employee workspace'}
             </div>
-            <div className="font-medium">{user?.name}</div>
+            <div className="sh-serif text-lg font-semibold">{user?.name}</div>
           </div>
+          <span className="rounded-full bg-[#e0b46a]/30 px-3 py-1 text-sm font-medium text-[#5c3f27]">{roleLabel}</span>
         </header>
-        <nav className="flex gap-2 overflow-auto border-b border-[#e5d8c8] bg-[#fbf7f2] px-4 py-2 md:hidden">
+
+        <nav aria-label="Pages" className="flex gap-2 overflow-auto border-b border-[#e0d2c2] bg-[#fbf7f2] px-4 py-2 md:hidden">
           {nav.map(([to, label]) => (
             <NavLink
               key={to}
               to={to}
               end={to === '/app'}
               className={({ isActive }) =>
-                `whitespace-nowrap rounded-full px-3 py-1 text-sm ${isActive ? 'bg-press text-white' : 'bg-white text-[#5c4a3d]'}`
+                `whitespace-nowrap rounded-full px-3 py-1.5 text-sm transition ${isActive ? 'bg-[#7a5539] text-white' : 'bg-white text-[#5c4a3d]'}`
               }
             >
               {label}
             </NavLink>
           ))}
         </nav>
-        <div className="p-6">
+
+        <div key={pathname} className="sh-page p-6">
           <Outlet />
         </div>
       </main>

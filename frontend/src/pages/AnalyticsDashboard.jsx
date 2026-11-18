@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import api from '../api/client'
-import StatCard from '../components/StatCard'
-import Badge from '../components/Badge'
+import { DashSkeleton, DashStyles, Empty, Kpi, PageHeading, Panel, Pill, RankList } from '../components/DashKit'
 
-const COLORS = ['#74543b', '#c6a786', '#e5c7a7', '#8d6e53', '#d4b896']
+const COLORS = ['#7a5539', '#e0b46a', '#c6a786', '#a9805a', '#e5c7a7']
+const tip = { borderRadius: 12, border: '1px solid #e0d2c2', background: '#fbf7f2', boxShadow: '0 8px 20px rgba(44,33,24,.12)' }
+const tick = { fill: '#6b5a4c', fontSize: 12 }
 
 function money(n) {
   return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 }).format(n || 0)
@@ -14,159 +15,145 @@ export default function AnalyticsDashboard() {
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setError('')
+    setData(null)
     api
       .get('/analytics')
       .then(({ data }) => setData(data))
       .catch((err) => {
-        const message =
+        setError(
           err.response?.data?.message ||
-          (err.code === 'ERR_NETWORK'
-            ? 'Cannot reach the API. Start Laravel with php artisan serve on port 8000.'
-            : err.message)
-        setError(message)
+            (err.code === 'ERR_NETWORK' ? 'Cannot reach the server. Check your connection and try again. If the server was idle, wait a minute for it to wake up.' : err.message),
+        )
       })
   }, [])
 
+  useEffect(load, [load])
+
   if (error) {
     return (
-      <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5 text-rose-800">
-        <h2 className="font-semibold">Analytics could not load</h2>
+      <div role="alert" className="rounded-3xl border border-rose-200 bg-rose-50 p-6 text-rose-800">
+        <h2 className="text-xl font-semibold">Analytics could not load</h2>
         <p className="mt-2 text-sm">{error}</p>
+        <button onClick={load} className="mt-4 rounded-xl bg-[#7a5539] px-4 py-2 text-sm font-semibold text-white">Try again</button>
       </div>
     )
   }
 
-  if (!data) return <div>Loading analytics…</div>
+  if (!data) return (<><DashStyles /><DashSkeleton /></>)
+
+  const k = data.kpis
+  const attention = [...(data.maintenance_due || []).map((p) => ({ id: `m${p.id}`, name: p.name, pill: <Pill tone="amber">Due {p.next_maintenance_at}</Pill> })), ...(data.printers_with_problems || []).map((p) => ({ id: `i${p.id}`, name: p.name, pill: <Pill tone="red">{p.open_issues_count} open issues</Pill> }))]
 
   return (
     <div>
-      <h1 className="text-3xl font-semibold">Business Analytics</h1>
-      <p className="mb-6 text-[#7a6a5c]">Live totals from printing jobs, ink logs, issues, and maintenance.</p>
+      <DashStyles />
+      <PageHeading title="Business analytics" sub="Live totals from printing jobs, ink logs, issues and maintenance." />
+
       <div className="grid gap-4 md:grid-cols-4">
-        <StatCard label="Total sales" value={money(data.kpis.total_sales)} icon="₱" hint="Completed jobs in range" />
-        <StatCard label="Total orders" value={data.kpis.total_orders} icon="▤" hint={`AOV ${money(data.kpis.average_order_value)}`} />
-        <StatCard label="Ink consumed" value={`${(data.kpis.ink_consumed_ml / 1000).toFixed(1)} L`} icon="◉" />
-        <StatCard label="Open issues" value={data.kpis.open_issues} icon="⚑" hint={`${data.kpis.pending_tips} tips pending`} />
+        <Kpi label="Total sales" value={k.total_sales} format={money} icon="₱" hint="Completed jobs in range" />
+        <Kpi label="Total orders" value={k.total_orders} icon="▤" hint={`Average ${money(k.average_order_value)}`} />
+        <Kpi label="Ink consumed" value={k.ink_consumed_ml / 1000} format={(n) => `${n.toFixed(1)} L`} icon="◉" />
+        <Kpi label="Open issues" value={k.open_issues} icon="⚑" hint={`${k.pending_tips} tips pending`} />
       </div>
+
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <section className="card p-5">
-          <h3 className="mb-4 font-semibold">Monthly sales trend</h3>
+        <Panel title="Monthly sales">
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.monthly_sales}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip formatter={(v) => money(v)} />
-                <Bar dataKey="total" fill="#74543b" radius={[6, 6, 0, 0]} />
+                <defs>
+                  <linearGradient id="dk-bar" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor="#c08a4c" />
+                    <stop offset="1" stopColor="#7a5539" />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="#eadfce" vertical={false} />
+                <XAxis dataKey="month" tick={tick} axisLine={false} tickLine={false} />
+                <YAxis tick={tick} axisLine={false} tickLine={false} />
+                <Tooltip formatter={(v) => money(v)} contentStyle={tip} cursor={{ fill: 'rgba(224,180,106,.18)' }} />
+                <Bar dataKey="total" fill="url(#dk-bar)" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </section>
-        <section className="card p-5">
-          <h3 className="mb-4 font-semibold">Sales by printing type</h3>
+        </Panel>
+
+        <Panel title="Sales by printing type">
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={data.sales_by_type} dataKey="total" nameKey="printing_type" innerRadius={60} outerRadius={90}>
-                  {data.sales_by_type.map((_, i) => (
-                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                  ))}
+                <Pie data={data.sales_by_type} dataKey="total" nameKey="printing_type" innerRadius={62} outerRadius={96} paddingAngle={3} stroke="none">
+                  {data.sales_by_type.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Pie>
-                <Tooltip formatter={(v) => money(v)} />
+                <Tooltip formatter={(v) => money(v)} contentStyle={tip} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
           </div>
-        </section>
+        </Panel>
       </div>
+
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <section className="card p-5">
-          <h3 className="mb-4 font-semibold">Ink consumption by printer</h3>
+        <Panel title="Ink used by printer">
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.ink_by_printer} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" />
-                <YAxis type="category" dataKey="name" width={110} />
-                <Tooltip formatter={(v) => `${(v / 1000).toFixed(2)} L`} />
-                <Bar dataKey="ml" fill="#8d6e53" radius={[0, 6, 6, 0]} />
+                <defs>
+                  <linearGradient id="dk-bar-h" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0" stopColor="#7a5539" />
+                    <stop offset="1" stopColor="#d9a64e" />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="#eadfce" horizontal={false} />
+                <XAxis type="number" tick={tick} axisLine={false} tickLine={false} />
+                <YAxis type="category" dataKey="name" width={110} tick={tick} axisLine={false} tickLine={false} />
+                <Tooltip formatter={(v) => `${(v / 1000).toFixed(2)} L`} contentStyle={tip} cursor={{ fill: 'rgba(224,180,106,.18)' }} />
+                <Bar dataKey="ml" fill="url(#dk-bar-h)" radius={[0, 8, 8, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </section>
-        <section className="card p-5">
-          <h3 className="mb-3 font-semibold">Ink usage</h3>
-          <p className="mb-2 text-sm text-[#7a6a5c]">
-            Most used: {data.most_used_ink ? `${data.most_used_ink.color} ${data.most_used_ink.brand}` : '—'}
+        </Panel>
+
+        <Panel title="Ink usage by type">
+          <p className="mb-4 text-sm text-[#6b5a4c]">
+            Most used: <strong>{data.most_used_ink ? `${data.most_used_ink.color} ${data.most_used_ink.brand}` : 'none yet'}</strong>
           </p>
-          <table className="w-full text-sm">
-            <tbody>
-              {(data.ink_by_type || []).slice(0, 6).map((row) => (
-                <tr key={row.id} className="border-t border-[#f0e6da]">
-                  <td className="py-2">
-                    {row.color} · {row.brand}
-                  </td>
-                  <td className="text-right">{(row.ml / 1000).toFixed(2)} L</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-        <section className="card p-5">
-          <h3 className="mb-3 font-semibold">Printers needing attention</h3>
-          {(data.maintenance_due || []).map((p) => (
-            <div key={p.id} className="mb-2 flex justify-between text-sm">
-              <span>{p.name}</span>
-              <Badge>due {p.next_maintenance_at}</Badge>
-            </div>
-          ))}
-          {(data.printers_with_problems || []).map((p) => (
-            <div key={`i-${p.id}`} className="mb-2 flex justify-between text-sm">
-              <span>{p.name}</span>
-              <Badge>{p.open_issues_count} issues</Badge>
-            </div>
-          ))}
-        </section>
+          <RankList
+            items={(data.ink_by_type || []).slice(0, 6).map((r) => ({ label: `${r.color} ${r.brand}`, value: r.ml }))}
+            fmt={(v) => `${(v / 1000).toFixed(2)} L`}
+            empty="No ink has been logged in this range."
+          />
+        </Panel>
       </div>
+
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
-        <section className="card p-5">
-          <h3 className="mb-2 font-semibold">Frequently replaced parts</h3>
-          {(data.frequently_replaced_parts || []).map((p) => (
-            <div key={p.id} className="flex justify-between py-1 text-sm">
-              <span>{p.name}</span>
-              <span>{p.replaced}</span>
-            </div>
-          ))}
-        </section>
-        <section className="card p-5">
-          <h3 className="mb-2 font-semibold">Most useful tips</h3>
-          {(data.most_useful_tips || []).map((t) => (
-            <div key={t.id} className="flex justify-between py-1 text-sm">
-              <span>{t.title}</span>
-              <span>{Number(t.ratings_avg_score || 0).toFixed(1)}</span>
-            </div>
-          ))}
-        </section>
-        <section className="card p-5">
-          <h3 className="mb-2 font-semibold">Most viewed tutorials</h3>
-          {(data.most_viewed_tutorials || []).map((t) => (
-            <div key={t.id} className="flex justify-between py-1 text-sm">
-              <span>{t.title}</span>
-              <span>{t.views}</span>
-            </div>
-          ))}
-        </section>
-        <section className="card p-5">
-          <h3 className="mb-2 font-semibold">Most reported issues</h3>
-          {(data.most_reported_issues || []).map((t) => (
-            <div key={t.title} className="flex justify-between py-1 text-sm">
-              <span>{t.title}</span>
-              <span>{t.reports}</span>
-            </div>
-          ))}
-        </section>
+        <Panel title="Printers needing attention" className="lg:col-span-1">
+          {attention.length ? (
+            <ul className="space-y-3">
+              {attention.map((a) => (
+                <li key={a.id} className="flex items-center justify-between gap-3 text-sm">
+                  <span className="truncate">{a.name}</span>
+                  {a.pill}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <Empty>All printers are in good shape.</Empty>
+          )}
+        </Panel>
+        <Panel title="Frequently replaced parts">
+          <RankList items={(data.frequently_replaced_parts || []).map((p) => ({ label: p.name, value: p.replaced }))} empty="No parts replaced yet." />
+        </Panel>
+        <Panel title="Most useful tips">
+          <RankList items={(data.most_useful_tips || []).map((t) => ({ label: t.title, value: Number(t.ratings_avg_score || 0) }))} fmt={(v) => v.toFixed(1)} empty="No rated tips yet." />
+        </Panel>
+        <Panel title="Most viewed tutorials">
+          <RankList items={(data.most_viewed_tutorials || []).map((t) => ({ label: t.title, value: t.views }))} fmt={(v) => `${v} views`} empty="No tutorials yet." />
+        </Panel>
+        <Panel title="Most reported issues" className="lg:col-span-2">
+          <RankList items={(data.most_reported_issues || []).map((t) => ({ label: t.title, value: t.reports }))} fmt={(v) => `${v} reports`} empty="No issues reported yet." />
+        </Panel>
       </div>
     </div>
   )
