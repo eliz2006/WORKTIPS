@@ -38,6 +38,21 @@ const css = `
 .wt-ink{animation:wt-fade 9s linear infinite}
 .wt-press{animation:wt-bob 7s ease-in-out infinite}
 
+/* flowing ink and gently drifting shapes */
+@keyframes wt-drop{0%{transform:translateY(-8px);opacity:0}15%{opacity:1}70%{opacity:1}100%{transform:translateY(56px);opacity:0}}
+@keyframes wt-flow{to{stroke-dashoffset:-48}}
+@keyframes wt-drift{0%,100%{transform:translate(0,0)}50%{transform:translate(28px,-20px)}}
+.wt-drop{animation:wt-drop 3.2s ease-in infinite}
+.wt-flow{stroke-dasharray:14 10;animation:wt-flow 2.4s linear infinite}
+.wt-drift{animation:wt-drift 14s ease-in-out infinite}
+.wt-drift-b{animation:wt-drift 18s ease-in-out infinite reverse}
+
+/* soft hover motion */
+.wt-lift{transition:transform .25s ease,box-shadow .25s ease}
+.wt-lift:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(44,33,24,.14)}
+.wt-item{transition:border-color .25s ease,transform .25s ease}
+.wt-item:hover{border-color:#c6a786;transform:translateX(4px)}
+
 /* timeline line draws when scrolled into view */
 .wt-line{transform-origin:left;transform:scaleX(0);transition:transform 1.6s cubic-bezier(.4,0,.2,1)}
 .wt-seen .wt-line{transform:scaleX(1)}
@@ -46,7 +61,8 @@ const css = `
 
 @media (prefers-reduced-motion:reduce){
   .wt-in{animation:none;opacity:1}
-  .wt-roller,.wt-reveal,.wt-ink,.wt-press{animation:none}
+  .wt-roller,.wt-reveal,.wt-ink,.wt-press,.wt-drop,.wt-flow,.wt-drift,.wt-drift-b{animation:none}
+  .wt-lift:hover,.wt-item:hover{transform:none}
   .wt-reveal{transform:none}.wt-roller{transform:translateX(340px)}
   .wt-line,.wt-dot{transition:none;transform:none;opacity:1}
 }
@@ -107,8 +123,11 @@ function PressArt() {
         </g>
       </g>
 
-      <circle cx="240" cy="75" r="26" fill="none" stroke="#e0b46a" strokeWidth="2" />
-      <path d="M240 55v40M220 75h40" stroke="#e0b46a" strokeWidth="2" />
+      <rect x="120" y="58" width="240" height="30" rx="10" fill="#5a4533" />
+      <path className="wt-flow" d="M134 73H346" stroke="#e0b46a" strokeWidth="4" strokeLinecap="round" fill="none" />
+      {[[150, '#1f9bd1', 0], [215, '#d6336c', 0.8], [280, '#f2c230', 1.6], [335, '#e0b46a', 2.4]].map(([x, c, d]) => (
+        <circle key={x} className="wt-drop" cx={x} cy="96" r="5" fill={c} style={{ animationDelay: `${d}s` }} />
+      ))}
     </svg>
   )
 }
@@ -147,8 +166,10 @@ export default function Landing() {
       </header>
 
       <main id="top">
-        <section className="bg-[#2c2118] text-[#f6efe6]">
-          <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-2 lg:py-24">
+        <section className="relative overflow-hidden bg-[#2c2118] text-[#f6efe6]">
+          <div aria-hidden="true" className="wt-drift pointer-events-none absolute -right-20 -top-24 h-80 w-80 rounded-full bg-[#7a5539]/50 blur-3xl" />
+          <div aria-hidden="true" className="wt-drift-b pointer-events-none absolute bottom-0 left-1/4 h-56 w-56 rounded-full bg-[#e0b46a]/20 blur-3xl" />
+          <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 lg:grid-cols-2 lg:py-24">
             <div>
               <h1 className="wt-serif wt-in text-4xl font-semibold leading-[1.1] sm:text-6xl">
                 Every solution starts with sharing.
@@ -157,11 +178,11 @@ export default function Landing() {
                 Keep your press floor&rsquo;s know-how, jobs and machine problems in one place, and see sales and ink use update as work gets done.
               </p>
               <div className="wt-in mt-8 flex flex-wrap gap-3" style={{ animationDelay: '.3s' }}>
-                <Link to={enterTo} className="rounded-xl bg-[#e0b46a] px-6 py-3 font-semibold text-[#2c2118] transition hover:bg-[#ebc27d]">
+                <Link to={enterTo} className="wt-lift rounded-xl bg-[#e0b46a] px-6 py-3 font-semibold text-[#2c2118]">
                   {user ? 'Continue to workspace' : 'Sign in'}
                 </Link>
                 {!user && (
-                  <Link to="/register" className="rounded-xl border border-white/25 px-6 py-3 font-medium transition hover:bg-white/10">
+                  <Link to="/register" className="wt-lift rounded-xl border border-white/25 px-6 py-3 font-medium hover:bg-white/10">
                     Create account
                   </Link>
                 )}
@@ -180,12 +201,15 @@ export default function Landing() {
           </p>
           <dl className="mt-12 grid gap-x-12 gap-y-10 md:grid-cols-2">
             {modules.map(([title, body]) => (
-              <div key={title} className="border-t-2 border-[#2c2118] pt-4">
+              <div key={title} className="wt-item border-t-2 border-[#2c2118] pt-4">
                 <dt className="wt-serif text-xl font-semibold">{title}</dt>
                 <dd className="mt-2 max-w-md leading-7 text-[#6b5a4c]">{body}</dd>
               </div>
             ))}
           </dl>
+          <Link to={enterTo} className="wt-lift mt-12 inline-block rounded-xl bg-[#7a5539] px-6 py-3 font-semibold text-white">
+            {user ? 'Open the workspace' : 'Sign in to explore'}
+          </Link>
         </section>
 
         <section id="flow" className="border-y border-[#e0d2c2] bg-[#fbf7f2]">
@@ -209,6 +233,9 @@ export default function Landing() {
                 ))}
               </ol>
             </div>
+            <a href="#roles" className="wt-lift mt-12 inline-block rounded-xl border border-[#7a5539] px-6 py-3 font-semibold text-[#7a5539]">
+              Choose your access
+            </a>
           </div>
         </section>
 
@@ -216,7 +243,7 @@ export default function Landing() {
           <h2 className="wt-serif text-3xl font-semibold sm:text-4xl">Pick the access you need.</h2>
           <p className="mt-3 text-[#6b5a4c]">An administrator approves every new account before it can sign in.</p>
           <div className="mt-10 grid gap-5 lg:grid-cols-2">
-            <article className="rounded-3xl border border-[#e0d2c2] bg-[#fbf7f2] p-8">
+            <article className="wt-lift rounded-3xl border border-[#e0d2c2] bg-[#fbf7f2] p-8">
               <h3 className="wt-serif text-2xl font-semibold">Recipient</h3>
               <p className="mt-1 text-[#6b5a4c]">View only</p>
               <ul className="mt-5 space-y-2 leading-7">
@@ -225,7 +252,7 @@ export default function Landing() {
                 <li>No changes to records</li>
               </ul>
             </article>
-            <article className="rounded-3xl bg-[#2c2118] p-8 text-[#f6efe6]">
+            <article className="wt-lift rounded-3xl bg-[#2c2118] p-8 text-[#f6efe6]">
               <h3 className="wt-serif text-2xl font-semibold">Employee</h3>
               <p className="mt-1 text-[#c6a786]">Operators and technicians</p>
               <ul className="mt-5 space-y-2 leading-7 text-[#e8dccf]">
@@ -244,7 +271,7 @@ export default function Landing() {
               Create an account, then wait for an administrator to approve it.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <Link to="/register" className="rounded-xl bg-[#fbf7f2] px-6 py-3 font-semibold text-[#2c2118]">Create account</Link>
+              <Link to="/register" className="wt-lift rounded-xl bg-[#fbf7f2] px-6 py-3 font-semibold text-[#2c2118]">Create account</Link>
               <Link to="/login" className="rounded-xl border border-white/40 px-6 py-3 font-medium transition hover:bg-white/10">Sign in</Link>
             </div>
           </div>
