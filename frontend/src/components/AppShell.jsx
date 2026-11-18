@@ -28,6 +28,7 @@ const adminNav = [
   ['/app/analytics', 'Analytics'],
   ['/app/knowledge', 'Knowledge Base'],
   ['/app/content', 'Content Review'],
+  ['/app/users', 'User Approvals'],
   ['/app/equipment', 'Printers'],
   ['/app/parts', 'Parts Catalog'],
   ['/app/issues', 'Issue Reports'],

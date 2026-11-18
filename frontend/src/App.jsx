@@ -17,6 +17,7 @@ import Ink from './pages/Ink'
 import Maintenance from './pages/Maintenance'
 import Content from './pages/Content'
 import AnalyticsDashboard from './pages/AnalyticsDashboard'
+import UserApprovals from './pages/UserApprovals'
 import Landing from './pages/Landing'
 
 export default function App() {
@@ -45,6 +46,7 @@ export default function App() {
                 <Route path="/app/ink" element={<Ink />} />
                 <Route path="/app/maintenance" element={<Maintenance />} />
                 <Route path="/app/content" element={<Content />} />
+                <Route path="/app/users" element={<UserApprovals />} />
               </Route>
             </Route>
           </Route>

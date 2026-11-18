@@ -3,11 +3,18 @@ import api from '../api/client'
 
 const AuthContext = createContext(null)
 
-export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
+function readSavedUser() {
+  try {
     const raw = localStorage.getItem('worktips_user')
-    return raw ? JSON.parse(raw) : null
-  })
+    return raw && raw !== 'undefined' ? JSON.parse(raw) : null
+  } catch {
+    localStorage.removeItem('worktips_user')
+    return null
+  }
+}
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(readSavedUser)
   const [loading, setLoading] = useState(!!localStorage.getItem('worktips_token'))
 
   useEffect(() => {
@@ -49,10 +56,10 @@ export function AuthProvider({ children }) {
         persist(data)
         return data.user
       },
+      // New accounts are "pending": no token, no auto login.
       register: async (payload) => {
         const { data } = await api.post('/register', payload)
-        persist(data)
-        return data.user
+        return data.message
       },
       logout: async () => {
         try {
