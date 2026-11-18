@@ -6,7 +6,7 @@ import PasswordInput from '../components/PasswordInput'
 export default function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
-  const [form, setForm] = useState({ email: 'eliza@worktips.test', password: 'password' })
+  const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
 
   const submit = async (e) => {
@@ -52,7 +52,6 @@ export default function Login() {
             Create an account
           </Link>
         </p>
-        <p className="mt-4 text-xs text-[#8a7b6d]"></p>
       </form>
     </div>
   )
