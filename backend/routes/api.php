@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\PrinterPartController;
 use App\Http\Controllers\Api\PrintingJobController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\UserManagementController;
+use App\Http\Controllers\Api\SalesSummaryController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);

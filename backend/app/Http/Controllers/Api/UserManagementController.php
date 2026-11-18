@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\Period;
 use Illuminate\Http\Request;
 
 class UserManagementController extends Controller
@@ -17,6 +18,13 @@ class UserManagementController extends Controller
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
+
+        if (in_array($request->role, ['admin', 'employee', 'recipient'], true)) {
+            $query->where('role', $request->role);
+        }
+
+        // month / year the account was registered
+        Period::apply($query, $request, 'created_at');
 
         return $query->get(['id', 'name', 'email', 'role', 'department', 'status', 'created_at']);
     }
@@ -35,7 +43,7 @@ class UserManagementController extends Controller
         }
 
         $user->update(['status' => 'suspended']);
-        $user->tokens()->delete(); // logs them out immediately
+        $user->tokens()->delete();
 
         return $user;
     }
