@@ -82,17 +82,16 @@ const css = `
 .wt-item:hover{border-color:#c6a786;transform:translateX(4px)}
 
 /* cinematic intro: 3D wordmark, doors open sideways */
-@keyframes wt-wordin{from{opacity:0;transform:rotateX(70deg) translateZ(-260px) scale(.8)}to{opacity:1;transform:none}}
-@keyframes wt-float{0%,100%{transform:translateY(0) rotateZ(-1.2deg)}50%{transform:translateY(-12px) rotateZ(1.2deg)}}
+@keyframes wt-wordin{from{transform:rotateY(-95deg) rotateX(25deg) translateZ(-320px) scale(.7)}to{transform:none}}
+@keyframes wt-float{0%,100%{transform:translateY(0) rotateY(-16deg) rotateX(4deg)}50%{transform:translateY(-14px) rotateY(16deg) rotateX(-4deg)}}
 @keyframes wt-glint{0%,100%{opacity:.35}50%{opacity:1}}
 .wt-door{transition:transform 1.3s cubic-bezier(.77,0,.18,1)}
 .wt-open .wt-dl{transform:translateX(-101%)}
 .wt-open .wt-dr{transform:translateX(101%)}
-.wt-seam{transition:opacity .3s}.wt-open .wt-seam{opacity:0}
 .wt-stage{perspective:1100px}
 .wt-3d{transform-style:preserve-3d}
-.wt-tilt{transform-style:preserve-3d;transform:rotateY(calc(var(--mx,0)*24deg)) rotateX(calc(var(--my,0)*-15deg));transition:transform .25s ease-out}
-.wt-float{transform-style:preserve-3d;animation:wt-float 6s ease-in-out infinite}
+.wt-tilt{transform-style:preserve-3d;transform:rotateY(calc(var(--mx,0)*30deg)) rotateX(calc(var(--my,0)*-20deg));transition:transform .25s ease-out}
+.wt-float{transform-style:preserve-3d;animation:wt-float 7s ease-in-out infinite}
 .wt-wordin{transform-style:preserve-3d;animation:wt-wordin 1.8s cubic-bezier(.2,.7,.2,1) both}
 .wt-hint{animation:wt-glint 2.2s ease-in-out infinite}
 .wt-hold .wt-mask>span,.wt-hold .wt-in{animation-play-state:paused}
@@ -174,7 +173,7 @@ function PressArt() {
   )
 }
 
-const depth = Array.from({ length: 12 })
+const depth = Array.from({ length: 26 })
 
 function Scene() {
   return (
@@ -185,25 +184,31 @@ function Scene() {
           <div className="wt-float">
             <div className="wt-wordin wt-serif relative font-semibold leading-none" style={{ fontSize: 'clamp(3.2rem,14vw,10rem)' }}>
               <span className="invisible">PrinTour</span>
-              {depth.map((_, i) => (
-                <span
-                  key={i}
-                  aria-hidden="true"
-                  className="absolute inset-0"
-                  style={{
-                    transform: `translateZ(${-i * 6}px)`,
-                    color: i === 0 ? '#e8bf74' : `hsl(28 38% ${38 - i * 2}%)`,
-                    textShadow: i === 0 ? '0 0 50px rgba(224,180,106,.35)' : 'none',
-                  }}
-                >
-                  PrinTour
-                </span>
-              ))}
+              {[...depth].reverse().map((_, r) => {
+                const i = depth.length - 1 - r
+                const front = i === 0
+                return (
+                  <span
+                    key={i}
+                    aria-hidden="true"
+                    className="absolute inset-0"
+                    style={{
+                      transform: `translateZ(${-i * 4}px)`,
+                      ...(front
+                        ? { backgroundImage: 'linear-gradient(180deg,#fff0c2 5%,#e8bf74 45%,#c48a3c 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent' }
+                        : { color: `hsl(30 55% ${44 - i * 1.4}%)` }),
+                    }}
+                  >
+                    PrinTour
+                  </span>
+                )
+              })}
             </div>
           </div>
         </div>
+        <div aria-hidden="true" className="absolute left-1/2 top-[118%] h-6 w-[80%] -translate-x-1/2 rounded-full bg-black/50 blur-xl" />
       </div>
-      <p className="wt-in absolute left-0 right-0 top-[62%] text-center text-lg tracking-wide text-[#c6a786]" style={{ animationDelay: '1.4s' }}>
+      <p className="wt-in absolute left-0 right-0 top-[66%] text-center text-lg tracking-wide text-[#c6a786]" style={{ animationDelay: '1.4s' }}>
         Print. Share. Track.
       </p>
       <p className="wt-hint absolute bottom-10 left-0 right-0 text-center text-sm text-[#e8dccf]">Click anywhere to enter</p>
@@ -258,7 +263,6 @@ function Intro({ onOpen, onDone }) {
       <div className="wt-door wt-dr absolute right-0 top-0 h-full w-1/2 overflow-hidden bg-[#2c2118]">
         <div className="absolute right-0 top-0 h-full w-screen"><Scene /></div>
       </div>
-      <div aria-hidden="true" className="wt-seam pointer-events-none absolute left-1/2 top-0 h-full w-px bg-[#e0b46a]/60" />
     </div>
   )
 }
