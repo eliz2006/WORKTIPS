@@ -81,6 +81,22 @@ const css = `
 .wt-item{transition:border-color .25s ease,transform .25s ease}
 .wt-item:hover{border-color:#c6a786;transform:translateX(4px)}
 
+/* cinematic intro: 3D wordmark, doors open sideways */
+@keyframes wt-wordin{from{opacity:0;transform:rotateX(70deg) translateZ(-260px) scale(.8)}to{opacity:1;transform:none}}
+@keyframes wt-float{0%,100%{transform:translateY(0) rotateZ(-1.2deg)}50%{transform:translateY(-12px) rotateZ(1.2deg)}}
+@keyframes wt-glint{0%,100%{opacity:.35}50%{opacity:1}}
+.wt-door{transition:transform 1.3s cubic-bezier(.77,0,.18,1)}
+.wt-open .wt-dl{transform:translateX(-101%)}
+.wt-open .wt-dr{transform:translateX(101%)}
+.wt-seam{transition:opacity .3s}.wt-open .wt-seam{opacity:0}
+.wt-stage{perspective:1100px}
+.wt-3d{transform-style:preserve-3d}
+.wt-tilt{transform-style:preserve-3d;transform:rotateY(calc(var(--mx,0)*24deg)) rotateX(calc(var(--my,0)*-15deg));transition:transform .25s ease-out}
+.wt-float{transform-style:preserve-3d;animation:wt-float 6s ease-in-out infinite}
+.wt-wordin{transform-style:preserve-3d;animation:wt-wordin 1.8s cubic-bezier(.2,.7,.2,1) both}
+.wt-hint{animation:wt-glint 2.2s ease-in-out infinite}
+.wt-hold .wt-mask>span,.wt-hold .wt-in{animation-play-state:paused}
+
 @media (prefers-reduced-motion:reduce){
   .wt *,.wt *::before{animation:none!important;transition:none!important}
   .wt-mask>span,.wt-in{transform:none;opacity:1}
@@ -158,10 +174,108 @@ function PressArt() {
   )
 }
 
+const depth = Array.from({ length: 12 })
+
+function Scene() {
+  return (
+    <div className="absolute inset-0 grid place-items-center">
+      <div aria-hidden="true" className="absolute inset-0" style={{ background: 'radial-gradient(60% 50% at 50% 50%, rgba(122,85,57,.55), transparent 70%)' }} />
+      <div className="wt-stage relative">
+        <div className="wt-tilt">
+          <div className="wt-float">
+            <div className="wt-wordin wt-serif relative font-semibold leading-none" style={{ fontSize: 'clamp(3.2rem,14vw,10rem)' }}>
+              <span className="invisible">PrinTour</span>
+              {depth.map((_, i) => (
+                <span
+                  key={i}
+                  aria-hidden="true"
+                  className="absolute inset-0"
+                  style={{
+                    transform: `translateZ(${-i * 6}px)`,
+                    color: i === 0 ? '#e8bf74' : `hsl(28 38% ${38 - i * 2}%)`,
+                    textShadow: i === 0 ? '0 0 50px rgba(224,180,106,.35)' : 'none',
+                  }}
+                >
+                  PrinTour
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <p className="wt-in absolute left-0 right-0 top-[62%] text-center text-lg tracking-wide text-[#c6a786]" style={{ animationDelay: '1.4s' }}>
+        Print. Share. Track.
+      </p>
+      <p className="wt-hint absolute bottom-10 left-0 right-0 text-center text-sm text-[#e8dccf]">Click anywhere to enter</p>
+    </div>
+  )
+}
+
+function Intro({ onOpen, onDone }) {
+  const [open, setOpen] = useState(false)
+  const opened = useRef(false)
+  const root = useRef(null)
+
+  const go = () => {
+    if (opened.current) return
+    opened.current = true
+    setOpen(true)
+    onOpen()
+    setTimeout(onDone, 1500)
+  }
+
+  useEffect(() => {
+    const t = setTimeout(go, 4200)
+    const key = () => go()
+    window.addEventListener('keydown', key)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      clearTimeout(t)
+      window.removeEventListener('keydown', key)
+      document.body.style.overflow = ''
+    }
+  }, [])
+
+  const move = (e) => {
+    const el = root.current
+    el.style.setProperty('--mx', (e.clientX / window.innerWidth - 0.5) * 2)
+    el.style.setProperty('--my', (e.clientY / window.innerHeight - 0.5) * 2)
+  }
+
+  return (
+    <div
+      ref={root}
+      role="button"
+      tabIndex={0}
+      aria-label="Enter PrinTour"
+      onClick={go}
+      onPointerMove={move}
+      className={`fixed inset-0 z-[100] cursor-pointer ${open ? 'wt-open' : ''}`}
+    >
+      <div className="wt-door wt-dl absolute left-0 top-0 h-full w-1/2 overflow-hidden bg-[#2c2118]">
+        <div className="absolute left-0 top-0 h-full w-screen"><Scene /></div>
+      </div>
+      <div className="wt-door wt-dr absolute right-0 top-0 h-full w-1/2 overflow-hidden bg-[#2c2118]">
+        <div className="absolute right-0 top-0 h-full w-screen"><Scene /></div>
+      </div>
+      <div aria-hidden="true" className="wt-seam pointer-events-none absolute left-1/2 top-0 h-full w-px bg-[#e0b46a]/60" />
+    </div>
+  )
+}
+
 export default function Landing() {
   const { user } = useAuth()
   const enterTo = user ? '/app' : '/login'
   const [flowRef, flowSeen] = useSeen()
+  const [intro, setIntro] = useState(() => {
+    try {
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      return !reduced && sessionStorage.getItem('printour_intro') !== '1'
+    } catch {
+      return false
+    }
+  })
+  const [holding, setHolding] = useState(intro)
 
   const onMove = (e) => {
     const r = e.currentTarget.getBoundingClientRect()
@@ -174,14 +288,23 @@ export default function Landing() {
   }
 
   return (
-    <div className="wt min-h-screen bg-[#f3ebe0]">
+    <div className={`wt min-h-screen bg-[#f3ebe0] ${holding ? 'wt-hold' : ''}`}>
       <style>{css}</style>
+      {intro && (
+        <Intro
+          onOpen={() => {
+            setHolding(false)
+            try { sessionStorage.setItem('printour_intro', '1') } catch {}
+          }}
+          onDone={() => setIntro(false)}
+        />
+      )}
 
       <header className="sticky top-0 z-30 border-b border-[#e0d2c2] bg-[#fbf7f2]/90 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
           <a href="#top" className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#7a5539] text-sm font-semibold text-white">WT</span>
-            <span className="wt-serif text-lg font-semibold">WorkTips</span>
+            <span className="grid h-10 w-10 place-items-center rounded-xl bg-[#7a5539] text-sm font-semibold text-white">PT</span>
+            <span className="wt-serif text-lg font-semibold">PrinTour</span>
           </a>
           <nav className="hidden items-center gap-7 text-sm text-[#5c4a3d] md:flex">
             <a href="#modules" className="hover:text-[#2c2118]">What you get</a>
@@ -335,7 +458,7 @@ export default function Landing() {
       </main>
 
       <footer className="border-t border-[#e0d2c2] bg-[#fbf7f2] px-5 py-8 text-center text-sm text-[#8a7b6d]">
-        WorkTips for ACES Tagum College, Inc. A.Y. 2026&ndash;2027
+        PrinTour for ACES Tagum College, Inc. A.Y. 2026&ndash;2027
       </footer>
     </div>
   )
