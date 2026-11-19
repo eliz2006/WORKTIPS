@@ -53,7 +53,24 @@ export function inPeriod(v, { month, year }) {
 
 const sel = 'rounded-xl border border-[#e0d2c2] bg-white px-3 py-2 text-sm outline-none focus:border-[#7a5539] focus:ring-4 focus:ring-[#e0b46a]/35'
 
-export default function FilterBar({ value, onChange, roles, children }) {
+/** Date / Month / Year switch used to group charts */
+export function GroupToggle({ value, onChange }) {
+  const opts = [['day', 'Date'], ['month', 'Month'], ['year', 'Year']]
+  return (
+    <div className="text-sm">
+      <span className="mb-1 block font-medium text-[#6b5a4c]">View by</span>
+      <div role="group" aria-label="View by" className="inline-flex rounded-xl bg-[#f3ebe0] p-1">
+        {opts.map(([v, l]) => (
+          <button key={v} type="button" aria-pressed={value === v} onClick={() => onChange(v)} className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${value === v ? 'bg-[#7a5539] text-white shadow' : 'text-[#5c4a3d] hover:bg-white'}`}>
+            {l}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export default function FilterBar({ value, onChange, roles, extra, children }) {
   const thisYear = new Date().getFullYear()
   const years = Array.from({ length: 6 }, (_, i) => thisYear - i)
   const set = (k) => (e) => onChange({ ...value, [k]: e.target.value })
@@ -84,6 +101,7 @@ export default function FilterBar({ value, onChange, roles, children }) {
           {years.map((y) => <option key={y} value={y}>{y}</option>)}
         </select>
       </label>
+      {extra}
       {dirty ? (
         <button type="button" onClick={() => onChange({ ...value, month: '', year: '', ...(roles ? { role: '' } : {}) })} className="rounded-xl px-3 py-2 text-sm font-medium text-[#7a5539] hover:bg-[#f3ebe0]">
           Clear filters

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from '../api/client'
 import Modal from '../components/Modal'
-import FilterBar, { fmtDate, inPeriod, periodParams } from '../components/FilterBar'
+import FilterBar, { GroupToggle, fmtDate, inPeriod, periodParams } from '../components/FilterBar'
 import SalesSummary from '../components/SalesSummary'
 import JobsChart from '../components/JobsChart'
 import { useAuth } from '../context/AuthContext'
@@ -25,6 +25,7 @@ export default function Jobs() {
   const [filter, setFilter] = useState({ month: '', year: '' })
   const [refreshKey, setRefreshKey] = useState(0)
   const [active, setActive] = useState('sales-record')
+  const [group, setGroup] = useState('month')
   const [form, setForm] = useState({
     printer_id: '',
     customer_name: '',
@@ -114,18 +115,18 @@ export default function Jobs() {
         ))}
       </nav>
 
-      <FilterBar value={filter} onChange={setFilter}>
+      <FilterBar value={filter} onChange={setFilter} extra={<GroupToggle value={group} onChange={setGroup} />}>
         <span className="text-sm text-[#6b5a4c]">
           {shown.length} {shown.length === 1 ? 'job' : 'jobs'}, <strong>{money(shownTotal)}</strong>
         </span>
       </FilterBar>
 
       <section id="sales-record" className="mb-6 scroll-mt-40">
-        <SalesSummary filter={filter} refreshKey={refreshKey} />
+        <SalesSummary filter={filter} group={group} refreshKey={refreshKey} />
       </section>
 
       <section id="jobs-chart" className="mb-6 scroll-mt-40">
-        <JobsChart rows={shown} />
+        <JobsChart filter={filter} group={group} refreshKey={refreshKey} />
       </section>
 
       <section id="jobs-list" className="scroll-mt-40">

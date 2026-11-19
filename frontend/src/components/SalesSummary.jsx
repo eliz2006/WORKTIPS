@@ -20,8 +20,9 @@ function label(group, p) {
  * Pass `filter` ({month, year}) to share the page's filter bar; leave it out to show its own.
  * Change `refreshKey` to reload after a new job is saved.
  */
-export default function SalesSummary({ filter: external, refreshKey = 0 }) {
-  const [group, setGroup] = useState('month')
+export default function SalesSummary({ filter: external, group: extGroup, refreshKey = 0 }) {
+  const [ownGroup, setOwnGroup] = useState('month')
+  const group = extGroup || ownGroup
   const [own, setOwn] = useState({ month: '', year: '' })
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
@@ -52,7 +53,7 @@ export default function SalesSummary({ filter: external, refreshKey = 0 }) {
   const toggle = (
     <div role="group" aria-label="Group sales" className="inline-flex rounded-xl bg-[#f3ebe0] p-1">
       {groups.map(([v, l]) => (
-        <button key={v} type="button" aria-pressed={group === v} onClick={() => setGroup(v)} className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${group === v ? 'bg-[#7a5539] text-white' : 'text-[#5c4a3d]'}`}>
+        <button key={v} type="button" aria-pressed={group === v} onClick={() => setOwnGroup(v)} className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${group === v ? 'bg-[#7a5539] text-white' : 'text-[#5c4a3d]'}`}>
           {l}
         </button>
       ))}
@@ -63,9 +64,9 @@ export default function SalesSummary({ filter: external, refreshKey = 0 }) {
     <section className="rounded-3xl border border-[#e0d2c2] bg-[#fbf7f2] p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-xl font-semibold">Sales record</h3>
-        {external && toggle}
+        {!extGroup && external && toggle}
       </div>
-      {!external && <FilterBar value={own} onChange={setOwn}>{toggle}</FilterBar>}
+      {!external && <FilterBar value={own} onChange={setOwn}>{!extGroup && toggle}</FilterBar>}
       {error && <p role="alert" className="mb-3 text-sm text-rose-700">{error}</p>}
 
       {!data ? (
