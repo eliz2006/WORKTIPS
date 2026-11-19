@@ -6,6 +6,12 @@ import SalesSummary from '../components/SalesSummary'
 import JobsChart from '../components/JobsChart'
 import { useAuth } from '../context/AuthContext'
 
+const SECTIONS = [
+  ['sales-record', 'Sales record'],
+  ['jobs-chart', 'Jobs chart'],
+  ['jobs-list', 'Jobs list'],
+]
+
 function money(n) {
   return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(n || 0)
 }
@@ -18,6 +24,7 @@ export default function Jobs() {
   const [open, setOpen] = useState(false)
   const [filter, setFilter] = useState({ month: '', year: '' })
   const [refreshKey, setRefreshKey] = useState(0)
+  const [active, setActive] = useState('sales-record')
   const [form, setForm] = useState({
     printer_id: '',
     customer_name: '',
@@ -56,6 +63,23 @@ export default function Jobs() {
     setRefreshKey((k) => k + 1)
   }
 
+  // highlight the section you are looking at
+  useEffect(() => {
+    const els = SECTIONS.map(([id]) => document.getElementById(id)).filter(Boolean)
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.isIntersecting && setActive(e.target.id)),
+      { rootMargin: '-30% 0px -60% 0px' },
+    )
+    els.forEach((el) => io.observe(el))
+    return () => io.disconnect()
+  }, [])
+
+  const jump = (id) => {
+    setActive(id)
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    document.getElementById(id)?.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+  }
+
   const shown = rows.filter((r) => inPeriod(r.job_date, filter))
   const shownTotal = shown.reduce((sum, r) => sum + Number(r.total_amount || 0), 0)
 
@@ -73,20 +97,45 @@ export default function Jobs() {
         )}
       </div>
 
+      <nav aria-label="Jump to a section" className="sticky top-[81px] z-10 mb-5 flex gap-2 overflow-x-auto rounded-2xl border border-[#e0d2c2] bg-[#fbf7f2]/95 p-2 backdrop-blur">
+        {SECTIONS.map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => jump(id)}
+            aria-current={active === id ? 'true' : undefined}
+            className={`whitespace-nowrap rounded-xl px-4 py-2 text-sm font-medium transition ${active === id ? 'bg-[#7a5539] text-white shadow' : 'text-[#5c4a3d] hover:bg-[#f3ebe0]'}`}
+          >
+            {label}
+            {id === 'jobs-list' && (
+              <span className={`ml-2 rounded-full px-2 py-0.5 text-xs ${active === id ? 'bg-white/25' : 'bg-[#e0b46a]/40'}`}>{shown.length}</span>
+            )}
+          </button>
+        ))}
+      </nav>
+
       <FilterBar value={filter} onChange={setFilter}>
         <span className="text-sm text-[#6b5a4c]">
           {shown.length} {shown.length === 1 ? 'job' : 'jobs'}, <strong>{money(shownTotal)}</strong>
         </span>
       </FilterBar>
 
-      <div className="mb-6 grid gap-6">
+      <section id="sales-record" className="mb-6 scroll-mt-40">
         <SalesSummary filter={filter} refreshKey={refreshKey} />
-        <JobsChart rows={shown} />
-      </div>
+      </section>
 
-      <div className="card overflow-auto">
+      <section id="jobs-chart" className="mb-6 scroll-mt-40">
+        <JobsChart rows={shown} />
+      </section>
+
+      <section id="jobs-list" className="scroll-mt-40">
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+          <h3 className="text-xl font-semibold">Jobs list</h3>
+          {shown.length > 5 && <span className="text-sm text-[#6b5a4c]">Showing 5 at a time. Scroll the list to see all {shown.length} jobs.</span>}
+        </div>
+        <div className="card max-h-[21rem] overflow-auto">
         <table className="w-full text-sm">
-          <thead className="bg-[#f6efe6] text-left">
+          <thead className="sticky top-0 z-10 bg-[#f6efe6] text-left">
             <tr>
               <th className="p-3">Job</th>
               <th>Type</th>
@@ -119,7 +168,8 @@ export default function Jobs() {
             )}
           </tbody>
         </table>
-      </div>
+        </div>
+      </section>
       {open && (
         <Modal title="Record printing job" onClose={() => setOpen(false)}>
           <form onSubmit={submit} className="grid gap-3">
