@@ -115,6 +115,8 @@ function PressArt() {
 }
 
 
+const departments = ['Machine Operator', 'Layout Artist', 'Cutter Operator']
+
 const roles = [
   { id: 'recipient', title: 'Recipient', hint: 'View only. Browse knowledge, printers, jobs and issues. Cannot post or edit.' },
   { id: 'employee', title: 'Employee', hint: 'Full floor access. Post tips, report issues and record printing jobs.' },
@@ -133,7 +135,7 @@ const inputCls = 'w-full rounded-xl bg-transparent px-4 py-3 outline-none'
 
 export default function Register() {
   const { register } = useAuth()
-  const [form, setForm] = useState({ name: '', email: '', password: '', password_confirmation: '', department: 'Press Floor', role: 'employee' })
+  const [form, setForm] = useState({ name: '', email: '', password: '', password_confirmation: '', department: '', role: 'employee' })
   const [show, setShow] = useState(false)
   const [error, setError] = useState('')
   const [shake, setShake] = useState(0)
@@ -146,7 +148,8 @@ export default function Register() {
     setError('')
     setBusy(true)
     try {
-      const message = await register(form)
+      const payload = form.role === 'recipient' ? { ...form, department: 'Not applicable' } : form
+      const message = await register(payload)
       setSuccess(message || 'Account created. Please wait for an administrator to approve it before you sign in.')
     } catch (err) {
       const fields = err.response?.data?.errors
@@ -222,9 +225,16 @@ export default function Register() {
               <Field id="rg-email" label="Email">
                 <input id="rg-email" type="email" required autoComplete="email" value={form.email} onChange={set('email')} className={inputCls} placeholder="you@example.com" />
               </Field>
-              <Field id="rg-dept" label="Department">
-                <input id="rg-dept" required value={form.department} onChange={set('department')} className={inputCls} />
-              </Field>
+              {form.role === 'employee' && (
+                <Field id="rg-dept" label="Department">
+                  <select id="rg-dept" required value={form.department} onChange={set('department')} className={`${inputCls} cursor-pointer`}>
+                    <option value="" disabled>Choose your department</option>
+                    {departments.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </Field>
+              )}
               <Field id="rg-pass" label="Password">
                 <input id="rg-pass" type={show ? 'text' : 'password'} required autoComplete="new-password" value={form.password} onChange={set('password')} className={inputCls} />
                 <button type="button" onClick={() => setShow((v) => !v)} aria-pressed={show} aria-label={show ? 'Hide passwords' : 'Show passwords'} className="mr-2 rounded-lg px-3 py-1.5 text-sm text-[#7a5539] hover:bg-[#f3ebe0]">
