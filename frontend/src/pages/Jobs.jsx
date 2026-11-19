@@ -3,6 +3,7 @@ import api from '../api/client'
 import Modal from '../components/Modal'
 import FilterBar, { fmtDate, inPeriod, periodParams } from '../components/FilterBar'
 import SalesSummary from '../components/SalesSummary'
+import JobsChart from '../components/JobsChart'
 import { useAuth } from '../context/AuthContext'
 
 function money(n) {
@@ -78,8 +79,9 @@ export default function Jobs() {
         </span>
       </FilterBar>
 
-      <div className="mb-6">
+      <div className="mb-6 grid gap-6">
         <SalesSummary filter={filter} refreshKey={refreshKey} />
+        <JobsChart rows={shown} />
       </div>
 
       <div className="card overflow-auto">
