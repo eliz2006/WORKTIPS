@@ -33,8 +33,6 @@ export default function App() {
               <Route path="/app" element={<HomeRedirect />} />
               <Route path="/app/knowledge" element={<Knowledge />} />
               <Route path="/app/knowledge/:id" element={<KnowledgeDetail />} />
-              <Route path="/app/tutorials" element={<Knowledge forcedType="tutorial" />} />
-              <Route path="/app/troubleshooting" element={<Knowledge forcedType="troubleshooting" />} />
               <Route path="/app/tips" element={<MyTips />} />
               <Route path="/app/saved" element={<Saved />} />
               <Route path="/app/equipment" element={<Printers />} />

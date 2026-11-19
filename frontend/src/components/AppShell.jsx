@@ -1,11 +1,10 @@
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 const employeeNav = [
   ['/app', 'Dashboard'],
   ['/app/knowledge', 'Knowledge Base'],
-  ['/app/tutorials', 'Tutorials & Videos'],
-  ['/app/troubleshooting', 'Troubleshooting'],
   ['/app/equipment', 'Equipment'],
   ['/app/tips', 'My Tips'],
   ['/app/saved', 'Saved Items'],
@@ -16,8 +15,6 @@ const employeeNav = [
 const recipientNav = [
   ['/app', 'Dashboard'],
   ['/app/knowledge', 'Knowledge Base'],
-  ['/app/tutorials', 'Tutorials & Videos'],
-  ['/app/troubleshooting', 'Troubleshooting'],
   ['/app/equipment', 'Equipment'],
   ['/app/issues', 'Issue Reports'],
   ['/app/jobs', 'Printing Jobs'],
@@ -25,7 +22,6 @@ const recipientNav = [
 
 const adminNav = [
   ['/app', 'Dashboard'],
-  ['/app/analytics', 'Analytics'],
   ['/app/knowledge', 'Knowledge Base'],
   ['/app/content', 'Content Review'],
   ['/app/users', 'User Approvals'],
@@ -47,6 +43,8 @@ const css = `
 @keyframes sh-drift{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,-16px)}}
 @keyframes sh-flow{to{stroke-dashoffset:-48}}
 .sh-page{animation:sh-page .45s cubic-bezier(.2,.7,.2,1)}
+@keyframes sh-pop{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:none}}
+.sh-pop{animation:sh-pop .25s cubic-bezier(.2,.7,.2,1)}
 .sh-drift{animation:sh-drift 14s ease-in-out infinite}
 .sh-flow{stroke-dasharray:10 8;animation:sh-flow 2.4s linear infinite}
 .sh-link{position:relative;transition:background .2s,color .2s,transform .2s}
@@ -60,6 +58,26 @@ export default function AppShell() {
   const { user, isAdmin, isRecipient, roleLabel, logout } = useAuth()
   const navigate = useNavigate()
   const { pathname } = useLocation()
+  const [confirmOut, setConfirmOut] = useState(false)
+  const [busy, setBusy] = useState(false)
+
+  useEffect(() => {
+    if (!confirmOut) return
+    const onKey = (e) => e.key === 'Escape' && setConfirmOut(false)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [confirmOut])
+
+  const doLogout = async () => {
+    setBusy(true)
+    try {
+      await logout()
+    } finally {
+      setBusy(false)
+      setConfirmOut(false)
+      navigate('/login')
+    }
+  }
   const nav = isAdmin ? adminNav : isRecipient ? recipientNav : employeeNav
   const initials = user?.name
     ?.split(' ')
@@ -104,10 +122,7 @@ export default function AppShell() {
           </div>
           <button
             className="mt-3 w-full rounded-xl border border-white/15 px-3 py-2 text-sm transition hover:bg-white/10"
-            onClick={async () => {
-              await logout()
-              navigate('/login')
-            }}
+            onClick={() => setConfirmOut(true)}
           >
             Log out
           </button>
@@ -144,6 +159,29 @@ export default function AppShell() {
           <Outlet />
         </div>
       </main>
+
+      {confirmOut && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-[#2c2118]/60 p-4 backdrop-blur-sm" onClick={() => setConfirmOut(false)}>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="sh-out-title"
+            onClick={(e) => e.stopPropagation()}
+            className="sh-pop w-full max-w-sm rounded-3xl border border-[#e0d2c2] bg-[#fbf7f2] p-7 shadow-2xl"
+          >
+            <h2 id="sh-out-title" className="text-2xl font-semibold">Log out of PrinTour?</h2>
+            <p className="mt-2 text-[#6b5a4c]">You will need to sign in again to continue.</p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button autoFocus type="button" onClick={() => setConfirmOut(false)} className="rounded-xl border border-[#e0d2c2] px-5 py-2.5 font-medium transition hover:bg-white">
+                Cancel
+              </button>
+              <button type="button" disabled={busy} onClick={doLogout} className="rounded-xl bg-[#7a5539] px-5 py-2.5 font-semibold text-white transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-60">
+                {busy ? 'Logging out...' : 'Log out'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
