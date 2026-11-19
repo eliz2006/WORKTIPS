@@ -59,6 +59,7 @@ export default function AnalyticsDashboard() {
   if (!data) return (<><DashStyles /><DashSkeleton /></>)
 
   const k = data.kpis
+  const salesByType = (data.sales_by_type || []).map((r) => ({ ...r, total: Number(r.total), orders: Number(r.orders) }))
   const attention = [...(data.maintenance_due || []).map((p) => ({ id: `m${p.id}`, name: p.name, pill: <Pill tone="amber">Due {p.next_maintenance_at}</Pill> })), ...(data.printers_with_problems || []).map((p) => ({ id: `i${p.id}`, name: p.name, pill: <Pill tone="red">{p.open_issues_count} open issues</Pill> }))]
 
   return (
@@ -104,8 +105,8 @@ export default function AnalyticsDashboard() {
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={data.sales_by_type} dataKey="total" nameKey="printing_type" innerRadius={62} outerRadius={96} paddingAngle={3} stroke="none">
-                  {data.sales_by_type.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+                <Pie data={salesByType} dataKey="total" nameKey="printing_type" innerRadius={62} outerRadius={96} paddingAngle={3} stroke="none">
+                  {salesByType.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Pie>
                 <Tooltip formatter={(v) => money(v)} contentStyle={tip} />
                 <Legend />

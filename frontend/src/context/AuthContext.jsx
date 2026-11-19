@@ -61,6 +61,13 @@ export function AuthProvider({ children }) {
         const { data } = await api.post('/register', payload)
         return data.message
       },
+      // Change name and / or profile photo
+      updateProfile: async (payload) => {
+        const { data } = await api.put('/profile', payload)
+        localStorage.setItem('worktips_user', JSON.stringify(data))
+        setUser(data)
+        return data
+      },
       logout: async () => {
         try {
           await api.post('/logout')

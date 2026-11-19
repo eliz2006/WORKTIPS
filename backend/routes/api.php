@@ -10,12 +10,15 @@ use App\Http\Controllers\Api\MaintenanceRecordController;
 use App\Http\Controllers\Api\PrinterController;
 use App\Http\Controllers\Api\PrinterPartController;
 use App\Http\Controllers\Api\PrintingJobController;
+use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\SalesSummaryController;
 use App\Http\Controllers\Api\UserManagementController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+
+Route::middleware(['auth:sanctum', 'active'])->put('/profile', [ProfileController::class, 'update']);
 
 Route::middleware(['auth:sanctum', 'active', 'deny-recipient-writes'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);

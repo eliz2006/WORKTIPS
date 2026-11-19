@@ -18,6 +18,7 @@ import Maintenance from './pages/Maintenance'
 import Content from './pages/Content'
 import AnalyticsDashboard from './pages/AnalyticsDashboard'
 import UserApprovals from './pages/UserApprovals'
+import Profile from './pages/Profile'
 import Landing from './pages/Landing'
 
 export default function App() {
@@ -31,8 +32,11 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<AppShell />}>
               <Route path="/app" element={<HomeRedirect />} />
+              <Route path="/app/profile" element={<Profile />} />
               <Route path="/app/knowledge" element={<Knowledge />} />
               <Route path="/app/knowledge/:id" element={<KnowledgeDetail />} />
+              <Route path="/app/tutorials" element={<Knowledge forcedType="tutorial" />} />
+              <Route path="/app/troubleshooting" element={<Knowledge forcedType="troubleshooting" />} />
               <Route path="/app/tips" element={<MyTips />} />
               <Route path="/app/saved" element={<Saved />} />
               <Route path="/app/equipment" element={<Printers />} />
