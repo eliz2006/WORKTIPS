@@ -65,7 +65,10 @@ class KnowledgeItemController extends Controller
             abort(403);
         }
 
-        $knowledgeItem->increment('views');
+        // An admin checking content in Content Review (?review=1) should not add a view.
+        if (! ($user->isAdmin() && $request->boolean('review'))) {
+            $knowledgeItem->increment('views');
+        }
 
         return $knowledgeItem->fresh()->load([
             'author:id,name,role',
@@ -156,15 +159,22 @@ class KnowledgeItemController extends Controller
     public function report(Request $request, KnowledgeItem $knowledgeItem)
     {
         $data = $request->validate([
-            'reason' => ['required', 'in:incorrect,outdated,unsafe,duplicate'],
-            'details' => ['nullable', 'string'],
+            'reason' => ['required', 'in:violence,nudity,hate,misleading,outdated,spam,other,incorrect,unsafe,duplicate'],
+            'details' => ['nullable', 'required_if:reason,other', 'string', 'max:1000'],
         ]);
 
-        $report = ContentReport::create([
-            ...$data,
-            'knowledge_item_id' => $knowledgeItem->id,
-            'user_id' => $request->user()->id,
-        ]);
+        // One open report per person per item, so reports cannot be spammed.
+        $report = ContentReport::firstOrCreate(
+            [
+                'knowledge_item_id' => $knowledgeItem->id,
+                'user_id' => $request->user()->id,
+                'status' => 'open',
+            ],
+            [
+                'reason' => $data['reason'],
+                'details' => $data['details'] ?? null,
+            ]
+        );
 
         return response()->json($report, 201);
     }
