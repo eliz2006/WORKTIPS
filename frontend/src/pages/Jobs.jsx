@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext'
 
 const SECTIONS = [
   ['sales-record', 'Sales record'],
-  ['jobs-chart', 'Jobs chart'],
+  ['jobs-chart', 'Sales chart'],
   ['jobs-list', 'Sold list'],
 ]
 

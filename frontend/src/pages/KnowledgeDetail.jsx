@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useLocation, useParams } from 'react-router-dom'
 import api from '../api/client'
 import Badge from '../components/Badge'
 import { useAuth } from '../context/AuthContext'
@@ -7,9 +7,13 @@ import { useAuth } from '../context/AuthContext'
 export default function KnowledgeDetail() {
   const { canWrite } = useAuth()
   const { id } = useParams()
+  const location = useLocation()
   const [item, setItem] = useState(null)
   const [comment, setComment] = useState('')
   const [score, setScore] = useState(5)
+
+  // back to the list the visitor came from (keeps the search and type filter)
+  const backTo = location.state?.from || '/app/knowledge'
 
   const load = () => api.get(`/knowledge/${id}`).then(({ data }) => setItem(data))
 
@@ -17,12 +21,25 @@ export default function KnowledgeDetail() {
     load()
   }, [id])
 
-  if (!item) return null
+  const back = (
+    <Link
+      to={backTo}
+      className="mb-5 inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-[#5c4a3d] transition hover:-translate-x-0.5 hover:bg-white motion-reduce:transition-none motion-reduce:hover:translate-x-0"
+    >
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M10 3L5 8l5 5" />
+      </svg>
+      Back to Knowledge Base
+    </Link>
+  )
+
+  if (!item) return <div className="mx-auto max-w-3xl">{back}</div>
 
   const video = item.media?.find((m) => m.kind === 'video')
 
   return (
     <div className="mx-auto max-w-3xl">
+      {back}
       <div className="mb-3 flex gap-2">
         <Badge>{item.type}</Badge>
         <Badge>{item.status}</Badge>
@@ -68,7 +85,7 @@ export default function KnowledgeDetail() {
                 <option key={n}>{n}</option>
               ))}
             </select>
-            <button className="rounded-xl bg-press px-3 py-2 text-white">Rate</button>
+            <button className="rounded-xl bg-[#7a5539] px-3 py-2 text-white">Rate</button>
           </form>
           <button
             className="rounded-xl border border-rose-200 px-3 py-2 text-rose-700"
@@ -97,7 +114,7 @@ export default function KnowledgeDetail() {
             }}
           >
             <input className="flex-1 rounded-xl border px-3 py-2" value={comment} onChange={(e) => setComment(e.target.value)} />
-            <button className="rounded-xl bg-press px-4 text-white">Post</button>
+            <button className="rounded-xl bg-[#7a5539] px-4 text-white">Post</button>
           </form>
         )}
       </section>

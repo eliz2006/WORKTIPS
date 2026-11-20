@@ -7,7 +7,7 @@ const tip = { borderRadius: 12, border: '1px solid #e0d2c2', background: '#fbf7f
 const tick = { fill: '#6b5a4c', fontSize: 12 }
 const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const money = (n) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', maximumFractionDigits: 0 }).format(n || 0)
-const TITLES = { day: 'Jobs by date', month: 'Jobs by month', year: 'Jobs by year' }
+const TITLES = { day: 'Sales by date', month: 'Sales by month', year: 'Sales by year' }
 const MAX_BARS = 31
 
 function label(group, p) {
@@ -16,7 +16,7 @@ function label(group, p) {
   return p
 }
 
-/** Number of jobs per date, month or year. Follows the same filter and "View by" as the sales record. */
+/** Number of sales per date, month or year. Follows the same filter and "View by" as the sales record. */
 export default function JobsChart({ filter, group, refreshKey = 0 }) {
   const [rows, setRows] = useState(null)
   const [error, setError] = useState('')
@@ -26,7 +26,7 @@ export default function JobsChart({ filter, group, refreshKey = 0 }) {
     api
       .get('/jobs/summary', { params: { group, ...periodParams(filter) } })
       .then((r) => setRows(r.data.rows))
-      .catch(() => setError('Could not load the jobs chart.'))
+      .catch(() => setError('Could not load the sales chart.'))
   }, [group, filter.month, filter.year, refreshKey])
 
   const { data, cut } = useMemo(() => {
@@ -46,7 +46,7 @@ export default function JobsChart({ filter, group, refreshKey = 0 }) {
       {!rows ? (
         <div className="h-64 animate-pulse rounded-2xl bg-[#eadfce]" />
       ) : data.length === 0 ? (
-        <p className="rounded-xl bg-[#f3ebe0] p-4 text-sm text-[#6b5a4c]">No jobs to chart for this period.</p>
+        <p className="rounded-xl bg-[#f3ebe0] p-4 text-sm text-[#6b5a4c]">No sales to chart for this period.</p>
       ) : (
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
@@ -63,7 +63,7 @@ export default function JobsChart({ filter, group, refreshKey = 0 }) {
               <Tooltip
                 contentStyle={tip}
                 cursor={{ fill: 'rgba(224,180,106,.18)' }}
-                formatter={(v, n, p) => [`${v} ${v === 1 ? 'job' : 'jobs'}, ${money(p.payload.sales)}`, p.payload.name]}
+                formatter={(v, n, p) => [`${v} ${v === 1 ? 'sale' : 'sales'}, ${money(p.payload.sales)}`, p.payload.name]}
                 separator=": "
               />
               <Bar dataKey="jobs" fill="url(#jb-bar)" radius={[8, 8, 0, 0]} />

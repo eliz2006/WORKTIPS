@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import api from '../api/client'
 import Badge from '../components/Badge'
 import { useAuth } from '../context/AuthContext'
 
 export default function Knowledge({ forcedType }) {
   const { canWrite } = useAuth()
+  const location = useLocation()
   const [params, setParams] = useSearchParams()
   const [items, setItems] = useState([])
   const q = params.get('q') || ''
   const type = forcedType || params.get('type') || ''
+
+  // lets the tip page's Back button return here with the same search and filter
+  const from = `${location.pathname}${location.search}`
 
   useEffect(() => {
     api.get('/knowledge', { params: { q, type } }).then(({ data }) => setItems(data.data || []))
@@ -23,7 +27,7 @@ export default function Knowledge({ forcedType }) {
           <p className="text-[#7a6a5c]">Tutorials, documentation, troubleshooting, and machine procedures.</p>
         </div>
         {canWrite && (
-          <Link to="/app/tips" className="rounded-xl bg-press px-4 py-2 text-white">
+          <Link to="/app/tips" className="rounded-xl bg-[#7a5539] px-4 py-2 text-white">
             Share a tip
           </Link>
         )}
@@ -50,7 +54,13 @@ export default function Knowledge({ forcedType }) {
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {items.map((t) => (
-          <article key={t.id} className="card overflow-hidden">
+          // the whole card is the link
+          <Link
+            key={t.id}
+            to={`/app/knowledge/${t.id}`}
+            state={{ from }}
+            className="card group block overflow-hidden transition duration-200 hover:-translate-y-1 hover:shadow-lg motion-reduce:transition-none motion-reduce:hover:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e0b46a]"
+          >
             <div className="h-28 overflow-hidden bg-[#efe0d0]">
               {t.media?.[0]?.url ? (
                 t.media[0].kind === 'video' ? (
@@ -67,11 +77,11 @@ export default function Knowledge({ forcedType }) {
               </div>
               <h3 className="font-semibold">{t.title}</h3>
               <p className="line-clamp-2 text-sm text-[#7a6a5c]">{t.body}</p>
-              <Link to={`/app/knowledge/${t.id}`} className="inline-block text-sm text-press">
+              <span className="inline-block text-sm text-[#7a5539] transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0">
                 View guide →
-              </Link>
+              </span>
             </div>
-          </article>
+          </Link>
         ))}
       </div>
     </div>
