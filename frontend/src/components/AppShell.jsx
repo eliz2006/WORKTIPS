@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import Avatar from './Avatar'
+import Announcements from './Announcements'
 
 const employeeNav = [
   ['/app', 'Dashboard'],
@@ -216,6 +217,7 @@ export default function AppShell() {
             <div className="sh-serif text-lg font-semibold">{user?.name}</div>
           </div>
           <div className="flex items-center gap-3">
+            <Announcements />
             <span className="rounded-full bg-[#e0b46a]/30 px-3 py-1 text-sm font-medium text-[#5c3f27]">{roleLabel}</span>
             <NavLink to="/app/profile" title="Edit your profile" aria-label="Edit your profile"><Avatar user={user} size={36} /></NavLink>
           </div>

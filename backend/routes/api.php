@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\AnnouncementController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\InkConsumptionController;
@@ -24,6 +25,7 @@ Route::middleware(['auth:sanctum', 'active', 'deny-recipient-writes'])->group(fu
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 
+    Route::get('/announcements', [AnnouncementController::class, 'index']);
     Route::get('/categories', [CategoryController::class, 'index']);
     Route::get('/ink-types', [InkConsumptionController::class, 'types']);
     Route::get('/printers/{printer}/solutions', [IssueReportController::class, 'suggestedSolutions']);
@@ -73,6 +75,9 @@ Route::middleware(['auth:sanctum', 'active', 'deny-recipient-writes'])->group(fu
         Route::patch('/knowledge/{knowledgeItem}/moderate', [KnowledgeItemController::class, 'moderate']);
         Route::get('/content-reports', [KnowledgeItemController::class, 'reports']);
         Route::patch('/content-reports/{report}', [KnowledgeItemController::class, 'resolveReport']);
+
+        Route::post('/announcements', [AnnouncementController::class, 'store']);
+        Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy']);
 
         Route::get('/analytics', [AnalyticsController::class, 'dashboard']);
 
