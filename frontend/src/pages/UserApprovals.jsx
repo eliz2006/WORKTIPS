@@ -23,6 +23,12 @@ export default function UserApprovals() {
     try { await fn(); await load() } catch (e) { setError(e.response?.data?.message || 'Action failed.') }
   }
 
+  const handleDelete = (u) => {
+    const ok = window.confirm(`Are you sure you want to delete ${u.name}? This cannot be undone.`)
+    if (!ok) return
+    act(() => api.delete(`/admin/users/${u.id}`))
+  }
+
   const btn = 'rounded-lg px-3 py-1.5 text-sm font-semibold transition hover:bg-[#f3ebe0]'
 
   return (
@@ -61,7 +67,7 @@ export default function UserApprovals() {
                     {u.status === 'active' && (
                       <button className={`${btn} text-[#7a5539]`} onClick={() => act(() => api.patch(`/admin/users/${u.id}/suspend`))}>Suspend</button>
                     )}
-                    <button className={`${btn} text-rose-700`} onClick={() => window.confirm(`Delete ${u.name}?`) && act(() => api.delete(`/admin/users/${u.id}`))}>Delete</button>
+                    <button className={`${btn} text-rose-700`} onClick={() => handleDelete(u)}>Delete</button>
                   </td>
                 </tr>
               ))}

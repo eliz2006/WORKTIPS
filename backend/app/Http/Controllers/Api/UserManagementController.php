@@ -54,6 +54,11 @@ class UserManagementController extends Controller
             return response()->json(['message' => 'You cannot delete your own account.'], 422);
         }
 
+        // The last remaining admin can never be deleted.
+        if ($user->isAdmin() && User::where('role', 'admin')->count() <= 1) {
+            return response()->json(['message' => 'You cannot delete the only admin account.'], 422);
+        }
+
         $user->tokens()->delete();
         $user->delete();
 
