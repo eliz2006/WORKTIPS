@@ -214,7 +214,7 @@ export default function Login() {
               New here?{' '}
               <Link to="/register" className="font-semibold text-[#7a5539] underline underline-offset-4">Create an account</Link>
             </p>
-            <p className="mt-3 text-center text-xs text-[#8a7b6d]">New accounts can sign in after an administrator approves them.</p>
+            <p className="mt-3 text-center text-xs text-[#8a7b6d]">Recipient accounts can sign in right away. Employee accounts need an administrator's approval first.</p>
           </form>
         </div>
       </main>

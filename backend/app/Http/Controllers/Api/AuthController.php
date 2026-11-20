@@ -20,12 +20,19 @@ class AuthController extends Controller
         if (($data['role'] ?? null) === 'admin') {
             $data['role'] = 'employee';
         }
-        $data['status'] = 'pending';
+
+        // Recipients (view only) can sign in right away.
+        // Employees can post and record data, so an administrator approves them first.
+        $isRecipient = ($data['role'] ?? null) === 'recipient';
+        $data['status'] = $isRecipient ? 'active' : 'pending';
 
         User::create($data);
 
         return response()->json([
-            'message' => 'Account created. Please wait for an administrator to approve it before you log in.',
+            'status' => $data['status'],
+            'message' => $isRecipient
+                ? 'Account created. You can sign in now.'
+                : 'Account created. Please wait for an administrator to approve it before you sign in.',
         ], 201);
     }
 

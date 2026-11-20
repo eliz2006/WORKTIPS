@@ -425,7 +425,7 @@ export default function Landing() {
 
         <section id="roles" className="mx-auto max-w-6xl px-5 py-24">
           <h2 className="wt-serif text-3xl font-semibold sm:text-5xl">Pick the access you need.</h2>
-          <p className="mt-3 text-lg text-[#6b5a4c]">An administrator approves every new account before it can sign in.</p>
+          <p className="mt-3 text-lg text-[#6b5a4c]">Recipient accounts can sign in right away. Employee accounts are approved by an administrator first.</p>
           <div className="mt-12 grid gap-5 lg:grid-cols-2">
             <article className="wt-lift rounded-3xl border border-[#e0d2c2] bg-[#fbf7f2] p-8">
               <h3 className="wt-serif text-2xl font-semibold">Recipient</h3>
@@ -453,7 +453,7 @@ export default function Landing() {
             <div aria-hidden="true" className="wt-drift pointer-events-none absolute -left-16 -top-16 h-64 w-64 rounded-full bg-[#e0b46a]/30 blur-3xl" />
             <div className="relative">
               <h2 className="wt-serif text-3xl font-semibold sm:text-5xl">Ready for the press floor?</h2>
-              <p className="mx-auto mt-3 max-w-md text-lg text-[#f1e3d0]">Create an account, then wait for an administrator to approve it.</p>
+              <p className="mx-auto mt-3 max-w-md text-lg text-[#f1e3d0]">Create an account. Recipients can sign in right away, and employees are approved by an administrator.</p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
                 <Link to="/register" className="wt-lift rounded-xl bg-[#fbf7f2] px-6 py-3 font-semibold text-[#2c2118]">Create account</Link>
                 <Link to="/login" className="wt-lift rounded-xl border border-white/40 px-6 py-3 font-medium hover:bg-white/10">Sign in</Link>

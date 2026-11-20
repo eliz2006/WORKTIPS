@@ -150,7 +150,12 @@ export default function Register() {
     try {
       const payload = form.role === 'recipient' ? { ...form, department: 'Not applicable' } : form
       const message = await register(payload)
-      setSuccess(message || 'Account created. Please wait for an administrator to approve it before you sign in.')
+      setSuccess(
+        message ||
+          (form.role === 'recipient'
+            ? 'Account created. You can sign in now.'
+            : 'Account created. Please wait for an administrator to approve it before you sign in.'),
+      )
     } catch (err) {
       const fields = err.response?.data?.errors
       setError((fields && Object.values(fields).flat()[0]) || err.response?.data?.message || 'Could not create the account. Check the details and try again.')
@@ -186,15 +191,17 @@ export default function Register() {
                 <path className="rg-check" d="M22 37l10 10 19-21" fill="none" stroke="#7a5539" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <h1 className="rg-serif mt-4 text-3xl font-semibold">Account created</h1>
-              <p role="status" className="mt-4 rounded-xl border border-amber-300 bg-amber-100 p-4 text-sm font-medium text-amber-900">{success}</p>
-              <p className="mt-4 text-sm text-[#6b5a4c]">You can sign in as soon as an administrator approves your account.</p>
+              <p role="status" className={`mt-4 rounded-xl border p-4 text-sm font-medium ${form.role === 'recipient' ? 'border-green-300 bg-green-100 text-green-900' : 'border-amber-300 bg-amber-100 text-amber-900'}`}>{success}</p>
+              <p className="mt-4 text-sm text-[#6b5a4c]">
+                {form.role === 'recipient' ? 'Your view-only account is ready to use.' : 'You can sign in as soon as an administrator approves your account.'}
+              </p>
               <Link to="/login" className="rg-lift mt-6 inline-block rounded-xl bg-[#7a5539] px-6 py-3 font-semibold text-white">Go to sign in</Link>
             </div>
           ) : (
             <form onSubmit={submit} className="rg-in mt-4 rounded-3xl border border-[#e0d2c2] bg-[#fbf7f2] p-8 shadow-[0_20px_50px_rgba(44,33,24,.08)]" style={{ animationDelay: '.1s' }}>
               <div className="rg-serif text-lg font-semibold text-[#7a5539] lg:hidden">PrinTour</div>
               <h1 className="rg-serif mt-1 text-4xl font-semibold">Create your account</h1>
-              <p className="mt-2 text-[#6b5a4c]">An administrator approves new accounts before they can sign in.</p>
+              <p className="mt-2 text-[#6b5a4c]">{form.role === 'recipient' ? 'Recipient accounts can sign in right away.' : 'An administrator approves employee accounts before they can sign in.'}</p>
 
               {error && (
                 <div key={shake} role="alert" className="rg-shake mt-5 rounded-xl border border-rose-300 bg-rose-100 p-4 text-sm font-medium text-rose-800">{error}</div>
