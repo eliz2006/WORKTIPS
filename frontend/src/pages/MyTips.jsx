@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import api from '../api/client'
 import Badge from '../components/Badge'
 import Modal from '../components/Modal'
+import FileDropzone from '../components/FileDropzone'
 import { useAuth } from '../context/AuthContext'
 
 export default function MyTips() {
@@ -11,6 +12,8 @@ export default function MyTips() {
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState({ title: '', type: 'tip', body: '' })
   const [files, setFiles] = useState([])
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
 
   const load = () => api.get('/knowledge', { params: { mine: 1 } }).then(({ data }) => setItems(data.data || []))
 
@@ -18,15 +21,30 @@ export default function MyTips() {
     load()
   }, [])
 
+  const close = () => {
+    setOpen(false)
+    setFiles([])
+    setError('')
+  }
+
   const submit = async (e) => {
     e.preventDefault()
-    const payload = new FormData()
-    Object.entries(form).forEach(([k, v]) => payload.append(k, v))
-    ;[...files].forEach((f) => payload.append('media[]', f))
-    await api.post('/knowledge', payload, { headers: { 'Content-Type': 'multipart/form-data' } })
-    setOpen(false)
-    setForm({ title: '', type: 'tip', body: '' })
-    load()
+    setError('')
+    setBusy(true)
+    try {
+      const payload = new FormData()
+      Object.entries(form).forEach(([k, v]) => payload.append(k, v))
+      files.forEach((f) => payload.append('media[]', f))
+      await api.post('/knowledge', payload, { headers: { 'Content-Type': 'multipart/form-data' } })
+      close()
+      setForm({ title: '', type: 'tip', body: '' })
+      load()
+    } catch (err) {
+      const fields = err.response?.data?.errors
+      setError((fields && Object.values(fields).flat()[0]) || err.response?.data?.message || 'Could not submit your tip. Please try again.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -34,7 +52,7 @@ export default function MyTips() {
       <div className="mb-5 flex justify-between">
         <h1 className="text-3xl font-semibold">My Tips</h1>
         {canWrite && (
-          <button className="rounded-xl bg-press px-4 py-2 text-white" onClick={() => setOpen(true)}>
+          <button className="rounded-xl bg-[#7a5539] px-4 py-2 text-white" onClick={() => setOpen(true)}>
             Share a tip
           </button>
         )}
@@ -66,7 +84,7 @@ export default function MyTips() {
         </table>
       </div>
       {open && (
-        <Modal title="Share workplace knowledge" onClose={() => setOpen(false)}>
+        <Modal title="Share workplace knowledge" onClose={close}>
           <form onSubmit={submit} className="space-y-3">
             <input className="w-full rounded-xl border px-3 py-2" placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
             <select className="w-full rounded-xl border px-3 py-2" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
@@ -77,8 +95,17 @@ export default function MyTips() {
               <option value="procedure">Procedure</option>
             </select>
             <textarea className="w-full rounded-xl border px-3 py-2" rows="5" placeholder="Steps or guidance" value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} required />
-            <input type="file" multiple accept="image/*,video/*" onChange={(e) => setFiles(e.target.files)} />
-            <button className="w-full rounded-xl bg-press py-2 text-white">Submit for review</button>
+
+            <FileDropzone files={files} onChange={setFiles} />
+
+            {error && (
+              <p role="alert" className="rounded-xl border border-rose-300 bg-rose-100 p-3 text-sm font-medium text-rose-800">
+                {error}
+              </p>
+            )}
+            <button disabled={busy} className="w-full rounded-xl bg-[#7a5539] py-2 text-white disabled:opacity-60">
+              {busy ? 'Submitting...' : 'Submit for review'}
+            </button>
           </form>
         </Modal>
       )}
