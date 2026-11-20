@@ -41,7 +41,8 @@ export default function MyTips() {
       load()
     } catch (err) {
       const fields = err.response?.data?.errors
-      setError((fields && Object.values(fields).flat()[0]) || err.response?.data?.message || 'Could not submit your tip. Please try again.')
+      const text = (fields && Object.values(fields).flat()[0]) || err.response?.data?.message || 'Could not submit your tip. Please try again.'
+      setError(/failed to upload/i.test(text) ? 'The file could not be uploaded. It may be too large. Try a smaller photo or video (under 50 MB).' : text)
     } finally {
       setBusy(false)
     }
@@ -96,7 +97,7 @@ export default function MyTips() {
             </select>
             <textarea className="w-full rounded-xl border px-3 py-2" rows="5" placeholder="Steps or guidance" value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} required />
 
-            <FileDropzone files={files} onChange={setFiles} />
+            <FileDropzone files={files} onChange={setFiles} hint="JPG, PNG or MP4, up to 50 MB" />
 
             {error && (
               <p role="alert" className="rounded-xl border border-rose-300 bg-rose-100 p-3 text-sm font-medium text-rose-800">
