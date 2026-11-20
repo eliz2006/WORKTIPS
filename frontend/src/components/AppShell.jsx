@@ -10,7 +10,7 @@ const employeeNav = [
   ['/app/tips', 'My Tips'],
   ['/app/saved', 'Saved Items'],
   ['/app/issues', 'Issue Reports'],
-  ['/app/jobs', 'Printing Jobs'],
+  ['/app/jobs', 'Company Sales'],
 ]
 
 const recipientNav = [
@@ -18,7 +18,7 @@ const recipientNav = [
   ['/app/knowledge', 'Knowledge Base'],
   ['/app/equipment', 'Equipment'],
   ['/app/issues', 'Issue Reports'],
-  ['/app/jobs', 'Printing Jobs'],
+  ['/app/jobs', 'Company Sales'],
 ]
 
 const adminNav = [
@@ -30,7 +30,7 @@ const adminNav = [
   ['/app/parts', 'Parts Catalog'],
   ['/app/issues', 'Issue Reports'],
   ['/app/maintenance', 'Maintenance'],
-  ['/app/jobs', 'Sales / Jobs'],
+  ['/app/jobs', 'Company Sales'],
   ['/app/ink', 'Ink Usage'],
 ]
 

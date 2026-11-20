@@ -9,7 +9,7 @@ import { useAuth } from '../context/AuthContext'
 const SECTIONS = [
   ['sales-record', 'Sales record'],
   ['jobs-chart', 'Jobs chart'],
-  ['jobs-list', 'Jobs list'],
+  ['jobs-list', 'Sold list'],
 ]
 
 function money(n) {
@@ -88,7 +88,7 @@ export default function Jobs() {
     <div>
       <div className="mb-5 flex justify-between">
         <div>
-          <h1 className="text-3xl font-semibold">Printing Jobs / Sales</h1>
+          <h1 className="text-3xl font-semibold">Company Sales</h1>
           <p className="text-[#7a6a5c]">Each completed job feeds total sales, type mix, and monthly trend charts.</p>
         </div>
         {canWrite && (
@@ -131,8 +131,8 @@ export default function Jobs() {
 
       <section id="jobs-list" className="scroll-mt-40">
         <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-          <h3 className="text-xl font-semibold">Jobs list</h3>
-          {shown.length > 5 && <span className="text-sm text-[#6b5a4c]">Showing 5 at a time. Scroll the list to see all {shown.length} jobs.</span>}
+          <h3 className="text-xl font-semibold">Sold list</h3>
+          {shown.length > 5 && <span className="text-sm text-[#6b5a4c]">Showing 5 at a time. Scroll the list to see all {shown.length} sold items.</span>}
         </div>
         <div className="card max-h-[21rem] overflow-auto">
         <table className="w-full text-sm">
