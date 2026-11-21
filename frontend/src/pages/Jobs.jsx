@@ -16,7 +16,7 @@ function money(n) {
   return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(n || 0)
 }
 
-export default function Order() {
+export default function Jobs() {
   const { canWrite } = useAuth()
   const [rows, setRows] = useState([])
   const [printers, setPrinters] = useState([])
@@ -138,7 +138,7 @@ export default function Order() {
         <table className="w-full text-sm">
           <thead className="sticky top-0 z-10 bg-[#f6efe6] text-left">
             <tr>
-              <th className="p-3">Job</th>
+              <th className="p-3">Orders</th>
               <th>Type</th>
               <th>Printer</th>
               <th>Qty</th>
