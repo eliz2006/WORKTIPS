@@ -93,7 +93,7 @@ export default function Jobs() {
         </div>
         {canWrite && (
           <button className="rounded-xl bg-[#7a5539] px-4 py-2 text-white" onClick={() => setOpen(true)}>
-            Record job
+            Sales entry
           </button>
         )}
       </div>
@@ -172,7 +172,7 @@ export default function Jobs() {
         </div>
       </section>
       {open && (
-        <Modal title="Record printing job" onClose={() => setOpen(false)}>
+        <Modal title="Record sales" onClose={() => setOpen(false)}>
           <form onSubmit={submit} className="grid gap-3">
             <input className="rounded-xl border px-3 py-2" placeholder="Customer name" value={form.customer_name} onChange={(e) => setForm({ ...form, customer_name: e.target.value })} />
             <input className="rounded-xl border px-3 py-2" placeholder="Product name" value={form.product_name} onChange={(e) => setForm({ ...form, product_name: e.target.value })} required />
@@ -201,7 +201,7 @@ export default function Jobs() {
               ))}
             </select>
             <input className="rounded-xl border px-3 py-2" placeholder="Ink quantity (ml)" value={form.ink_qty} onChange={(e) => setForm({ ...form, ink_qty: e.target.value })} />
-            <button className="rounded-xl bg-[#7a5539] py-2 text-white">Save job</button>
+            <button className="rounded-xl bg-[#7a5539] py-2 text-white">Save</button>
           </form>
         </Modal>
       )}

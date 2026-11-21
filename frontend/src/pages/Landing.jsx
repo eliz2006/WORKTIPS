@@ -6,9 +6,9 @@ const modules = [
   ['Knowledge base', 'Search tutorials, videos and procedures. Comment, rate, save, and flag guides that are out of date.'],
   ['Issue reports', 'Log a machine problem by printer. If it matches a known fault, the fix is attached for you.'],
   ['Printers and parts', 'Brand, model, compatible ink, condition, and parts like printheads and wiper blades in one catalog.'],
-  ['Jobs and ink', 'Record tarpaulin, sticker, sublimation and digital jobs. Add the ink used and the charts update.'],
+  ['Sales', 'Record tarpaulin, sticker, sublimation and digital jobs. Add the ink used and the charts update.'],
   ['Maintenance', 'Log service work and parts replaced. Each printer shows when its next service is due.'],
-  ['Analytics', 'Supervisors see sales, ink by printer, open issues, and the most useful tips as they happen.'],
+  ['Analytics', 'Administrators see sales, ink by printer, open issues, and the most useful tips as they happen.'],
 ]
 
 const steps = [
