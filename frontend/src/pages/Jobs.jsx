@@ -16,7 +16,7 @@ function money(n) {
   return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(n || 0)
 }
 
-export default function Jobs() {
+export default function Order() {
   const { canWrite } = useAuth()
   const [rows, setRows] = useState([])
   const [printers, setPrinters] = useState([])
