@@ -146,18 +146,18 @@ export default function UserApprovals() {
               <button autoFocus type="button" disabled={busy} onClick={() => setAsk(null)} className="rounded-xl border border-[#e0d2c2] px-5 py-2.5 font-medium transition hover:bg-white disabled:opacity-60">
                 Cancel
               </button>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={confirm}
-                className={`rounded-xl px-5 py-2.5 font-semibold text-white transition hover:-translate-y-0.5 disabled:opacity-60 ${copy.danger ? 'bg-rose-700' : 'bg-[#7a5539]'}`}
-              >
-                {busy ? 'Please wait...' : copy.cta}
-              </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={confirm}
+                  className={`rounded-xl px-5 py-2.5 font-semibold text-white transition hover:-translate-y-0.5 disabled:opacity-60 ${copy.danger ? 'bg-rose-700' : 'bg-[#7a5539]'}`}
+                >
+                  {busy ? 'Please wait...' : copy.cta}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
-  )
-}
+        )}
+      </div>
+    )
+  }
